@@ -16,6 +16,13 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# Create the environment:
+COPY environment.yml .
+RUN conda env create -f environment.yml
+
+# Make RUN commands use the new environment:
+SHELL ["conda", "run", "-n", "myenv", "/bin/bash", "-c"]
+
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001
@@ -46,4 +53,4 @@ COPY . .
 EXPOSE 8000
 
 # Run the application.
-CMD python ./src/main.py
+CMD python3 ./src/main.py
