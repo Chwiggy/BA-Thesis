@@ -49,10 +49,11 @@ class OSMFile:
 class OSMIndex:
     def __init__(self, path: str = None ) -> None:
         self.path = path
+        self.gdf = None
 
     def load_osm_fileindex(self) -> None:
         if self.path is None:
-            self.gdf = gp.GeoDataFrame(crs="EPSG:4326")
+            self.gdf = gp.GeoDataFrame()
             return
         self.gdf = gp.read_file(self.path)
 
@@ -60,25 +61,32 @@ class OSMIndex:
         new_row = {"agency": file.agency, "date": file.date, "path": file.path, "geometry": file.extent}
         self.gdf = self.gdf.append(new_row)
 
-    def add_files(self, files: list(OSMFile)) -> None:
-        osm_file_list = list()
-        for file in files:
-            new_row = {"agency": file.agency, "date": file.date, "path": file.path, "geometry": file.extent}
-            osm_file_list.append(new_row)
-        self.gdf = self.gdf.append(osm_file_list)
-
     def save_osmindex(self, path: str = None) -> None:
         if self.path is None:
             self.path = path
         self.gdf.to_file(filename=self.path, driver="GeoJSON", crs="EPSG:4326")
+    
+    def isempty(self):
+        return len(self.gdf)
 
     def find_osm_file(self, gdf: gp.GeoDataFrame) -> OSMFile:
-        matching_row = self.gdf.contains(gdf.unary_union)
-        coverage = self.gdf[matching_row]["geometry"].area
+        if self.isempty():
+            return None
+        
+        matching_rows = self.gdf.contains(gdf.unary_union)
+        if len(matching_rows) == 0:
+            return None
+        
+        coverage = self.gdf[matching_rows]["geometry"].area
         smallest = coverage.idxmin()
+        
         matching_file = OSMFile(
-            self.gdf.iloc[smallest]["path"]
+            path=self.gdf.iloc[smallest]["path"],
+            extent=self.gdf.iloc[smallest]["geometry"],
+            agency=self.gdf.iloc[smallest]["agency"],
+            date=self.gdf.iloc[smallest]["date"]
         )
+        
         return matching_file
     
 

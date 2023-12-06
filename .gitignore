@@ -2,3 +2,4 @@ src/thesis_BA.code-workspace
 data/gtfs
 src/data/osm_data
 src/data/indices/osm_data.json
+src/__pycache__/
