@@ -1,17 +1,26 @@
 import zipfile
 import datetime
-import dataclasses
 import geopandas as gp
 import pandas as pd
 import shapely
-from typing import Union
+from sys import argv
 
 def main():
-
+    #TODO argparse?
+    gtfs_path = argv[1]
+    
     #TODO read in gtfs feed
-    with zipfile.ZipFile('/home/emily/thesis_BA/data/gtfs/2023_rnv_gtfs.zip') as gtfs:
+    with zipfile.ZipFile(gtfs_path) as gtfs:
         with gtfs.open('stops.txt') as stops_file:
-            gp.GeoDataFrame(stops_file)
+            stops_df = pd.read_table(stops_file, sep=",")
+
+    stops_gdf = gp.GeoDataFrame(
+        stops_df, geometry=gp.points_from_xy(stops_df.stop_lon, stops_df.stop_lat), crs="EPSG:4326"
+    )
+
+    index = OSMIndex(path="data/indices/osm_data.json")
+    index.load_osm_fileindex
+    index.find_osm_file(gdf=stops_gdf)
 
     #TODO get bounds from gtfs feed
     #TODO download relevant osm data within those bounds
@@ -58,7 +67,9 @@ class OSMIndex:
             osm_file_list.append(new_row)
         self.gdf = self.gdf.append(osm_file_list)
 
-    def save_osmindex(self) -> None:
+    def save_osmindex(self, path: str = None) -> None:
+        if self.path is None:
+            self.path = path
         self.gdf.to_file(filename=self.path, driver="GeoJSON", crs="EPSG:4326")
 
     def find_osm_file(self, gdf: gp.GeoDataFrame) -> OSMFile:
