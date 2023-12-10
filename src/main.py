@@ -46,7 +46,7 @@ class OSMFile:
         elif dir_path is not None:
             self.path = dir_path + f"/{self.agency}_{self.date.strftime('%Y')}.osm.pbf"
         else:
-            raise MissingPath(message="Did not provide a filepath for OSMFile")
+            raise ErrorMissingPath(message="Did not provide a filepath for OSMFile")
 
 
 class OSMIndex:
@@ -76,6 +76,8 @@ class OSMIndex:
         param: path: save location (optional). If left unspecified overrites existing index.
         """
         if self.path is None:
+            if path is None:
+                raise ErrorMissingPath(message= "Please, provide a file path to save to!")
             self.path = path
         self.gdf.to_file(filename=self.path, driver="GeoJSON", crs="EPSG:4326")
     
@@ -110,7 +112,7 @@ class OSMIndex:
         return matching_file
     
 
-class MissingPath(Exception):
+class ErrorMissingPath(Exception):
     def __init__(self, message: str = None, *args: object) -> None:
         super().__init__(*args)
         self.message = message
