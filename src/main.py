@@ -50,29 +50,45 @@ class OSMFile:
 
 
 class OSMIndex:
+    """Class for index of osm data and associated operations"""
     def __init__(self, path: str = None ) -> None:
         self.path = path
         self.gdf = None
 
     def load_osm_fileindex(self) -> None:
+        """Loads osm indek into memory as a geopandas.GeoDataFrame"""
         if self.path is None:
             self.gdf = gp.GeoDataFrame()
             return
         self.gdf = gp.read_file(self.path)
 
     def add_file(self, file: OSMFile) -> None:
+        """
+        Append the currently loaded osm index with data from an OSMFile.
+        param: file: OSMFile object to add to the index
+        """
         new_row = {"agency": file.agency, "date": file.date, "path": file.path, "geometry": file.extent}
         self.gdf = self.gdf.append(new_row)
 
     def save_osmindex(self, path: str = None) -> None:
+        """
+        Saves OSMIndex at specified location
+        param: path: save location (optional). If left unspecified overrites existing index.
+        """
         if self.path is None:
             self.path = path
         self.gdf.to_file(filename=self.path, driver="GeoJSON", crs="EPSG:4326")
     
     def isempty(self):
-        return len(self.gdf)
+        """Tests if currently loaded index is empty"""
+        return bool(len(self.gdf))
 
     def find_osm_file(self, gdf: gp.GeoDataFrame) -> OSMFile:
+        """
+        Searches smallest available index entry that covers the extent of another GeoDataFrame
+        param: gdf: geopandas.GeoDataFrame to cover
+        return: matching_file: OSMFile that matches criteria or None if none found
+        """
         if self.isempty():
             return None
         
