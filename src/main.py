@@ -25,7 +25,10 @@ def main():
     #TODO get bounds from gtfs feed
     #TODO download relevant osm data within those bounds
     #TODO instantiate TravelTimeMatrixComputer object from r5py
-    #TODO find pois
+    #TODO find pois and create destination enum
+    #TODO hexgrids
+    #TODO loop over counties with travel time matrix calculations
+    #TODO output plots and data files
 
 if __name__ == "__main__":
     main()
@@ -76,7 +79,8 @@ class OSMIndex:
         matching_rows = self.gdf.contains(gdf.unary_union)
         if len(matching_rows) == 0:
             return None
-        
+        #TODO output type
+
         coverage = self.gdf[matching_rows]["geometry"].area
         smallest = coverage.idxmin()
         
