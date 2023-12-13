@@ -142,20 +142,47 @@ class ErrorMissingPath(Exception):
         self.message = message
 
 
-def get_osm_data(stops_gdf: gpd.GeoDataFrame, name: str) -> OSMFile:
+def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     index = OSMIndex(path="data/indices/osm_data.json")
     index.load_osm_fileindex()
-    matching_file = index.find_osm_file(gdf=stops_gdf)
+    matching_file = index.find_osm_file(gdf=geodata)
     if matching_file is None:
-        matching_file = download_osm_data(stops_gdf=stops_gdf)
+        matching_file = download_osm_data(geodata=geodata)
         
     if os.path.getsize(matching_file.path) > 500000000:
-        matching_file = crop_osm_data(stops_gdf, matching_file, name)
+        matching_file = crop_osm_data(geodata, matching_file, name)
     
     return matching_file
 
-def crop_osm_data(stops_gdf, matching_file, name):
-    stop_bounds = stops_gdf.total_bounds
+
+def download_osm_data(
+    geodata: gpd.GeoDataFrame, matching_dataset=None
+) -> OSMFile:
+    if matching_dataset is not None:
+        return_data = matching_dataset
+        return return_data
+
+    geofabrik_available = gpd.read_file("data/indices/geofabrik_downloadindex.json")
+
+    # finding smallest available set covering gtfs feed
+    matching_datasets = geofabrik_available.contains(geodata.unary_union)
+    coverage = geofabrik_available[matching_datasets]["geometry"].area
+    smallest = coverage.idxmin()
+    preferred_set = geofabrik_available.iloc[smallest]["id"]
+    preferred_set_extent = geofabrik_available.iloc[smallest]["geometry"]
+
+    osm_path = pyrosm.get_data(dataset=preferred_set, directory="data/osm_data")
+
+    # add set to index
+    return_data = OSMFile(
+        path=osm_path, extent=preferred_set_extent, name=preferred_set
+    )
+
+    return return_data
+
+
+def crop_osm_data(geodata, matching_file, name):
+    stop_bounds = geodata.total_bounds
     left, bottom, right, top = stop_bounds
     stops_extent = shapely.Polygon(
             shell=((left, bottom), (right, bottom), (right, top), (left, top))
@@ -182,28 +209,3 @@ def crop_osm_data(stops_gdf, matching_file, name):
     
     cropped_set = OSMFile(extent=stops_extent, path=save_path, name=dataset_name)
     return cropped_set
-
-def download_osm_data(
-    stops_gdf: gpd.GeoDataFrame, matching_dataset=None
-) -> OSMFile:
-    if matching_dataset is not None:
-        return_data = matching_dataset
-        return return_data
-
-    geofabrik_available = gpd.read_file("data/indices/geofabrik_downloadindex.json")
-
-    # finding smallest available set covering gtfs feed
-    matching_datasets = geofabrik_available.contains(stops_gdf.unary_union)
-    coverage = geofabrik_available[matching_datasets]["geometry"].area
-    smallest = coverage.idxmin()
-    preferred_set = geofabrik_available.iloc[smallest]["id"]
-    preferred_set_extent = geofabrik_available.iloc[smallest]["geometry"]
-
-    osm_path = pyrosm.get_data(dataset=preferred_set, directory="data/osm_data")
-
-    # add set to index
-    return_data = OSMFile(
-        path=osm_path, extent=preferred_set_extent, name=preferred_set
-    )
-
-    return return_data
