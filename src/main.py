@@ -11,6 +11,7 @@ from sys import argv
 def main():
     # TODO argparse?
     gtfs_path = argv[1]
+    gtfs_name = os.path.basename(gtfs_path)
 
     # TODO read in gtfs feed
     with zipfile.ZipFile(gtfs_path) as gtfs:
@@ -25,34 +26,13 @@ def main():
     # TODO config file with save locations
 
     matching_file = get_osm_data(stops_gdf)
-    if os.path.getsize(matching_file.path) > 500000000:
-        stop_bounds = stops_gdf.total_bounds
-        left, bottom, right, top = stop_bounds
-        stops_extent = shapely.Polygon(
-            shell=((left, bottom), (right, bottom), (right, top), (left, top))
-        )
-        # cropping pbf to bounding box with osmosis
-        subprocess.run(
-            [
-                "osmosis",
-                "--read-pbf",
-                f"file={matching_file.path}",
-                "--bounding-box",
-                f"top={top}",
-                f"left={left}",
-                f"bottom={bottom}",
-                f"right={right}",
-                "completeWays=yes",
-                "--write-pbf",
-                f"file=/data/osm_data/test.osm.pbf",
-            ]
-        )
-    # TODO get bounds from gtfs feed
-    download_osm_data(stops_gdf, matching_file)
+    
 
-    # TODO instantiate TravelTimeMatrixComputer object from r5py
+    # TODO instantiate r5py transport network
+    # TODO hexgrids and start locations
     # TODO find pois and create destination enum
-    # TODO hexgrids
+ 
+    # TODO instantiate TravelTimeMatrixComputer object from r5py
     # TODO loop over counties with travel time matrix calculations
     # TODO output plots and data files
 
@@ -162,19 +142,49 @@ class ErrorMissingPath(Exception):
         self.message = message
 
 
-def get_osm_data(stops_gdf):
+def get_osm_data(stops_gdf: gpd.GeoDataFrame, name: str) -> OSMFile:
     index = OSMIndex(path="data/indices/osm_data.json")
     index.load_osm_fileindex()
     matching_file = index.find_osm_file(gdf=stops_gdf)
-    if matching_file is not None:
-        return matching_file
-    else:
-        matching_file = download_osm_data(stops_gdf=stops_gdf, osmindex=index)
-        return matching_file
+    if matching_file is None:
+        matching_file = download_osm_data(stops_gdf=stops_gdf)
+        
+    if os.path.getsize(matching_file.path) > 500000000:
+        matching_file = crop_osm_data(stops_gdf, matching_file, name)
+    
+    return matching_file
 
+def crop_osm_data(stops_gdf, matching_file, name):
+    stop_bounds = stops_gdf.total_bounds
+    left, bottom, right, top = stop_bounds
+    stops_extent = shapely.Polygon(
+            shell=((left, bottom), (right, bottom), (right, top), (left, top))
+        )
+    dataset_name = name
+    save_path = f"data/osm_data/{dataset_name}.osm.pbf"
+
+    # cropping pbf to bounding box with osmosis
+    subprocess.run(
+            [
+                "osmosis",
+                "--read-pbf",
+                f"file={matching_file.path}",
+                "--bounding-box",
+                f"top={top}",
+                f"left={left}",
+                f"bottom={bottom}",
+                f"right={right}",
+                "completeWays=yes",
+                "--write-pbf",
+                f"file={save_path}",
+            ]
+        )
+    
+    cropped_set = OSMFile(extent=stops_extent, path=save_path, name=dataset_name)
+    return cropped_set
 
 def download_osm_data(
-    stops_gdf: gpd.GeoDataFrame, osmindex: OSMIndex, matching_dataset=None
+    stops_gdf: gpd.GeoDataFrame, matching_dataset=None
 ) -> OSMFile:
     if matching_dataset is not None:
         return_data = matching_dataset
@@ -195,6 +205,5 @@ def download_osm_data(
     return_data = OSMFile(
         path=osm_path, extent=preferred_set_extent, name=preferred_set
     )
-    osmindex.add_file(return_data)
 
     return return_data
