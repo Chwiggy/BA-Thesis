@@ -1,5 +1,6 @@
+import os
+import subprocess
 import zipfile
-import datetime
 import geopandas as gpd
 import pandas as pd
 import shapely
@@ -19,12 +20,15 @@ def main():
         stops_df, geometry=gpd.points_from_xy(stops_df.stop_lon, stops_df.stop_lat), crs="EPSG:4326"
     )
     #TODO config file with save locations
-    index = OSMIndex(path="data/indices/osm_data.json")
-    index.load_osm_fileindex()
-    matching_file = index.find_osm_file(gdf=stops_gdf)
-
+    
+    matching_file = get_osm_data(stops_gdf)
+    if os.path.getsize(matching_file.path) > 500000000:
+        stop_bounds = stops_gdf.total_bounds
+        left, bottom, right, top = stop_bounds
+        stops_extent = shapely.Polygon(shell=((left, bottom),(right, bottom), (right, top),(left, top)))
+        #cropping pbf to bounding box with osmosis
+        subprocess.run(['osmosis', '--read-pbf', f'file={osm_data}', '--bounding-box', f'top={top}', f'left={left}', f'bottom={bottom}', f'right={right}', 'completeWays=yes', '--write-pbf', f'file=/data/osm_data/test.osm.pbf'])
     #TODO get bounds from gtfs feed
-    #TODO download relevant osm data within those bounds
     download_osm_data(stops_gdf, matching_file)
 
 
@@ -57,19 +61,25 @@ class OSMIndex:
     def __init__(self, path: str = None ) -> None:
         self.path = path
         self.gdf = None
+        self.loaded = False
 
     def load_osm_fileindex(self) -> None:
         """Loads osm index into memory as a geopandas.GeoDataFrame"""
         if self.path is None:
             self.gdf = gpd.GeoDataFrame()
+            self.loaded = True
             return
         self.gdf = gpd.read_file(self.path)
+        self.loaded = True
 
     def add_file(self, file: OSMFile) -> None:
         """
         Append the currently loaded osm index with data from an OSMFile.
         param: file: OSMFile object to add to the index
         """
+        if not self.loaded:
+            self.load_osm_fileindex()
+        
         new_row = {"name":file.name, "path": file.path, "geometry": file.extent}
         self.gdf = self.gdf.append(new_row)
 
@@ -78,6 +88,9 @@ class OSMIndex:
         Saves OSMIndex at specified location
         param: path: save location (optional). If left unspecified overrites existing index.
         """
+        if not self.loaded:
+            self.load_osm_fileindex()
+        
         if self.path is None:
             if path is None:
                 raise ErrorMissingPath(message= "Please, provide a file path to save to!")
@@ -119,10 +132,21 @@ class ErrorMissingPath(Exception):
         super().__init__(*args)
         self.message = message
 
-def download_osm_data(stops_gdf: gpd.GeoDataFrame, matching_dataset, osmindex: OSMIndex):
+def get_osm_data(stops_gdf):
+    index = OSMIndex(path="data/indices/osm_data.json")
+    index.load_osm_fileindex()
+    matching_file = index.find_osm_file(gdf=stops_gdf)
+    if matching_file is not None:
+        return matching_file
+    else:
+        matching_file = download_osm_data(stops_gdf=stops_gdf, osmindex=index)
+        return matching_file
+
+
+def download_osm_data(stops_gdf: gpd.GeoDataFrame, osmindex: OSMIndex, matching_dataset = None) -> OSMFile:
     if matching_dataset is not None:
-        osmindex.save_osmindex()
-        return matching_dataset
+        return_data = matching_dataset
+        return return_data
 
     geofabrik_available = gpd.read_file('data/indices/geofabrik_downloadindex.json')
 
@@ -131,9 +155,12 @@ def download_osm_data(stops_gdf: gpd.GeoDataFrame, matching_dataset, osmindex: O
     coverage = geofabrik_available[matching_datasets]['geometry'].area
     smallest = coverage.idxmin()
     preferred_set = geofabrik_available.iloc[smallest]['id']
+    preferred_set_extent = geofabrik_available.iloc[smallest]['geometry']
 
-    base_osm_data = pyrosm.get_data(dataset=preferred_set, directory='data/osm_data')
+    osm_path = pyrosm.get_data(dataset=preferred_set, directory='data/osm_data')
     
+    #add set to index
+    return_data = OSMFile(path=osm_path, extent=preferred_set_extent, name=preferred_set)
+    osmindex.add_file(return_data)
 
-
-    return matching_dataset
+    return return_data
