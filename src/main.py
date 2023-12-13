@@ -40,15 +40,14 @@ if __name__ == "__main__":
 
 class OSMFile:
     """Class to provide basic properties of an osm.pbf file for transfer"""
-    def __init__(self, agency: str, date: datetime.datetime, extent: shapely.Polygon, path: str = None, dir_path: str = None,) -> None:
-        self.agency = agency
-        self.date = date
+    def __init__(self, extent: shapely.Polygon, path: str = None, dir_path: str = None, name: str = "test") -> None:
         self.extent = extent
+        self.name = name
         
         if path is not None:
             self.path = path
         elif dir_path is not None:
-            self.path = dir_path + f"/{self.agency}_{self.date.strftime('%Y')}.osm.pbf"
+            self.path = dir_path + f"/{self.name}.osm.pbf"
         else:
             raise ErrorMissingPath(message="Did not provide a filepath for OSMFile")
 
@@ -71,7 +70,7 @@ class OSMIndex:
         Append the currently loaded osm index with data from an OSMFile.
         param: file: OSMFile object to add to the index
         """
-        new_row = {"agency": file.agency, "date": file.date, "path": file.path, "geometry": file.extent}
+        new_row = {"name":file.name, "path": file.path, "geometry": file.extent}
         self.gdf = self.gdf.append(new_row)
 
     def save_osmindex(self, path: str = None) -> None:
@@ -107,10 +106,9 @@ class OSMIndex:
         smallest = coverage.idxmin()
         
         matching_file = OSMFile(
+            name=self.gdf.iloc[smallest]["name"],
             path=self.gdf.iloc[smallest]["path"],
             extent=self.gdf.iloc[smallest]["geometry"],
-            agency=self.gdf.iloc[smallest]["agency"],
-            date=self.gdf.iloc[smallest]["date"]
         )
         
         return matching_file
@@ -136,6 +134,6 @@ def download_osm_data(stops_gdf: gpd.GeoDataFrame, matching_dataset, osmindex: O
 
     base_osm_data = pyrosm.get_data(dataset=preferred_set, directory='data/osm_data')
     
-    
+
 
     return matching_dataset
