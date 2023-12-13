@@ -1,8 +1,9 @@
 import zipfile
 import datetime
-import geopandas as gp
+import geopandas as gpd
 import pandas as pd
 import shapely
+import pyrosm
 from sys import argv
 
 def main():
@@ -14,16 +15,19 @@ def main():
         with gtfs.open('stops.txt') as stops_file:
             stops_df = pd.read_table(stops_file, sep=",")
 
-    stops_gdf = gp.GeoDataFrame(
-        stops_df, geometry=gp.points_from_xy(stops_df.stop_lon, stops_df.stop_lat), crs="EPSG:4326"
+    stops_gdf = gpd.GeoDataFrame(
+        stops_df, geometry=gpd.points_from_xy(stops_df.stop_lon, stops_df.stop_lat), crs="EPSG:4326"
     )
-
+    #TODO config file with save locations
     index = OSMIndex(path="data/indices/osm_data.json")
-    index.load_osm_fileindex
-    index.find_osm_file(gdf=stops_gdf)
+    index.load_osm_fileindex()
+    matching_file = index.find_osm_file(gdf=stops_gdf)
 
     #TODO get bounds from gtfs feed
     #TODO download relevant osm data within those bounds
+    download_osm_data(stops_gdf, matching_file)
+
+
     #TODO instantiate TravelTimeMatrixComputer object from r5py
     #TODO find pois and create destination enum
     #TODO hexgrids
@@ -56,11 +60,11 @@ class OSMIndex:
         self.gdf = None
 
     def load_osm_fileindex(self) -> None:
-        """Loads osm indek into memory as a geopandas.GeoDataFrame"""
+        """Loads osm index into memory as a geopandas.GeoDataFrame"""
         if self.path is None:
-            self.gdf = gp.GeoDataFrame()
+            self.gdf = gpd.GeoDataFrame()
             return
-        self.gdf = gp.read_file(self.path)
+        self.gdf = gpd.read_file(self.path)
 
     def add_file(self, file: OSMFile) -> None:
         """
@@ -85,7 +89,7 @@ class OSMIndex:
         """Tests if currently loaded index is empty"""
         return bool(len(self.gdf))
 
-    def find_osm_file(self, gdf: gp.GeoDataFrame) -> OSMFile:
+    def find_osm_file(self, gdf: gpd.GeoDataFrame) -> OSMFile:
         """
         Searches smallest available index entry that covers the extent of another GeoDataFrame
         param: gdf: geopandas.GeoDataFrame to cover
@@ -116,3 +120,22 @@ class ErrorMissingPath(Exception):
     def __init__(self, message: str = None, *args: object) -> None:
         super().__init__(*args)
         self.message = message
+
+def download_osm_data(stops_gdf: gpd.GeoDataFrame, matching_dataset, osmindex: OSMIndex):
+    if matching_dataset is not None:
+        osmindex.save_osmindex()
+        return matching_dataset
+
+    geofabrik_available = gpd.read_file('data/indices/geofabrik_downloadindex.json')
+
+    #finding smallest available set covering gtfs feed
+    matching_datasets = geofabrik_available.contains(stops_gdf.unary_union)
+    coverage = geofabrik_available[matching_datasets]['geometry'].area
+    smallest = coverage.idxmin()
+    preferred_set = geofabrik_available.iloc[smallest]['id']
+
+    base_osm_data = pyrosm.get_data(dataset=preferred_set, directory='data/osm_data')
+    
+    
+
+    return matching_dataset
