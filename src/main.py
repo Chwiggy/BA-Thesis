@@ -26,12 +26,11 @@ def main():
     # TODO config file with save locations
 
     matching_file = get_osm_data(stops_gdf)
-    
 
     # TODO instantiate r5py transport network
     # TODO hexgrids and start locations
     # TODO find pois and create destination enum
- 
+
     # TODO instantiate TravelTimeMatrixComputer object from r5py
     # TODO loop over counties with travel time matrix calculations
     # TODO output plots and data files
@@ -60,6 +59,42 @@ class OSMFile:
             self.path = dir_path + f"/{self.name}.osm.pbf"
         else:
             raise ErrorMissingPath(message="Did not provide a filepath for OSMFile")
+
+    def crop(self, geodata: gpd.GeoDataFrame, name: str, inplace: bool = False):
+        stop_bounds = geodata.total_bounds
+        left, bottom, right, top = stop_bounds
+        stops_extent = shapely.Polygon(
+            shell=((left, bottom), (right, bottom), (right, top), (left, top))
+        )
+        dataset_name = name
+        save_path = f"data/osm_data/{dataset_name}.osm.pbf"
+
+        # cropping pbf to bounding box with osmosis
+        subprocess.run(
+            [
+                "osmosis",
+                "--read-pbf",
+                f"file={self.path}",
+                "--bounding-box",
+                f"top={top}",
+                f"left={left}",
+                f"bottom={bottom}",
+                f"right={right}",
+                "completeWays=yes",
+                "--write-pbf",
+                f"file={save_path}",
+            ]
+        )
+
+        if not inplace:
+            cropped_set = OSMFile(
+                extent=stops_extent, path=save_path, name=dataset_name
+            )
+            return cropped_set
+
+        self.name = name
+        self.path = save_path
+        self.extent = stops_extent
 
 
 class OSMIndex:
@@ -146,18 +181,20 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     index = OSMIndex(path="data/indices/osm_data.json")
     index.load_osm_fileindex()
     matching_file = index.find_osm_file(gdf=geodata)
+
     if matching_file is None:
         matching_file = download_osm_data(geodata=geodata)
-        
+        index.add_file(matching_file)
+
     if os.path.getsize(matching_file.path) > 500000000:
-        matching_file = crop_osm_data(geodata, matching_file, name)
-    
+        matching_file.crop(geodata, name, inplace=True)
+        index.add_file(matching_file)
+
+    index.save_osmindex(path="data/indices/osm_data.json")
     return matching_file
 
 
-def download_osm_data(
-    geodata: gpd.GeoDataFrame, matching_dataset=None
-) -> OSMFile:
+def download_osm_data(geodata: gpd.GeoDataFrame, matching_dataset=None) -> OSMFile:
     if matching_dataset is not None:
         return_data = matching_dataset
         return return_data
@@ -179,33 +216,3 @@ def download_osm_data(
     )
 
     return return_data
-
-
-def crop_osm_data(geodata, matching_file, name):
-    stop_bounds = geodata.total_bounds
-    left, bottom, right, top = stop_bounds
-    stops_extent = shapely.Polygon(
-            shell=((left, bottom), (right, bottom), (right, top), (left, top))
-        )
-    dataset_name = name
-    save_path = f"data/osm_data/{dataset_name}.osm.pbf"
-
-    # cropping pbf to bounding box with osmosis
-    subprocess.run(
-            [
-                "osmosis",
-                "--read-pbf",
-                f"file={matching_file.path}",
-                "--bounding-box",
-                f"top={top}",
-                f"left={left}",
-                f"bottom={bottom}",
-                f"right={right}",
-                "completeWays=yes",
-                "--write-pbf",
-                f"file={save_path}",
-            ]
-        )
-    
-    cropped_set = OSMFile(extent=stops_extent, path=save_path, name=dataset_name)
-    return cropped_set
