@@ -60,14 +60,24 @@ class OSMFile:
         else:
             raise ErrorMissingPath(message="Did not provide a filepath for OSMFile")
 
-    def crop(self, geodata: gpd.GeoDataFrame, name: str, inplace: bool = False):
+    def crop(self, geodata: gpd.GeoDataFrame, name: str = None, inplace: bool = False):
+        """
+        Crops the OSM data to a new file at data/osm_data/.
+        param: geodata: gpd.GeoDataFrame sets bounds to which the OSM file will be cropped.
+        param: name: (Optional) sets the name of the cropped file.
+        param: inplace: (Optional) If inplace is True the method returns nothing, else it returns a new OSMFile object.
+        return: Cropped OSMFile ob
+        """
         stop_bounds = geodata.total_bounds
         left, bottom, right, top = stop_bounds
         stops_extent = shapely.Polygon(
             shell=((left, bottom), (right, bottom), (right, top), (left, top))
         )
-        dataset_name = name
-        save_path = f"data/osm_data/{dataset_name}.osm.pbf"
+
+        if name is None:
+            name = self.name + "_cropped"
+
+        save_path = f"data/osm_data/{name}.osm.pbf"
 
         # cropping pbf to bounding box with osmosis
         subprocess.run(
@@ -87,9 +97,7 @@ class OSMFile:
         )
 
         if not inplace:
-            cropped_set = OSMFile(
-                extent=stops_extent, path=save_path, name=dataset_name
-            )
+            cropped_set = OSMFile(extent=stops_extent, path=save_path, name=name)
             return cropped_set
 
         self.name = name
@@ -172,12 +180,21 @@ class OSMIndex:
 
 
 class ErrorMissingPath(Exception):
+    """Error if no file path could be found."""
+
     def __init__(self, message: str = None, *args: object) -> None:
         super().__init__(*args)
         self.message = message
 
 
 def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
+    """
+    Acquires OSMdata either from local storage, or if no matching dataset is available by download from Geofabrik.
+    If the filesize is too large for easy processing, the dataset is cropped to match the bounds of the geodata.
+    param: geodata: gpd.GeoDataFrame to whoose bounds the OSM data is matched.
+    param: name: name under which a potentially cropped OSM data file is stored.
+    return: matching_file: file matching the extent of the provided GeoDataFrame.
+    """
     index = OSMIndex(path="data/indices/osm_data.json")
     index.load_osm_fileindex()
     matching_file = index.find_osm_file(gdf=geodata)
@@ -194,10 +211,12 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     return matching_file
 
 
-def download_osm_data(geodata: gpd.GeoDataFrame, matching_dataset=None) -> OSMFile:
-    if matching_dataset is not None:
-        return_data = matching_dataset
-        return return_data
+def download_osm_data(geodata: gpd.GeoDataFrame) -> OSMFile:
+    """
+    Downloads an OSM dataset from geofabrik that covers the extent of the provided GeoDataFrame
+    param: geodata: gpd.GeoDataFrame
+    return: return_data: OSMFile object
+    """
 
     geofabrik_available = gpd.read_file("data/indices/geofabrik_downloadindex.json")
 
