@@ -5,6 +5,7 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 import pyrosm
+import r5py
 from sys import argv
 
 
@@ -27,7 +28,12 @@ def main():
 
     matching_file = get_osm_data(stops_gdf)
 
-    # TODO instantiate r5py transport network
+    transport_network = r5py.TransportNetwork(
+        osm_pbf=matching_file.path,
+        gtfs=gtfs_path
+    ) 
+
+    
     # TODO hexgrids and start locations
     # TODO find pois and create destination enum
 
