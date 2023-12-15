@@ -1,9 +1,11 @@
 
 
 import os
+import pandas as pd
 import geopandas as gpd
 import pyrosm
 import shapely
+import fiona
 
 
 import subprocess
@@ -55,7 +57,7 @@ class OSMFile:
         if name is None:
             name = self.name + "_cropped"
 
-        save_path = f"data/osm_data/{name}.osm.pbf"
+        save_path = f"src/data/osm_data/{name}.osm.pbf"
 
         # cropping pbf to bounding box with osmosis
         subprocess.run(
@@ -94,10 +96,13 @@ class OSMIndex:
     def load_osm_fileindex(self) -> None:
         """Loads osm index into memory as a geopandas.GeoDataFrame"""
         if self.path is None:
-            self.gdf = gpd.GeoDataFrame()
+            self.gdf = gpd.GeoDataFrame(columns=['name', 'path', 'geometry'], geometry='geometry', crs='EPSG:4326')
             self.loaded = True
             return
-        self.gdf = gpd.read_file(self.path)
+        try:
+            self.gdf = gpd.read_file(self.path)
+        except fiona.errors.DriverError:
+            self.gdf = gpd.GeoDataFrame(columns=['name', 'path', 'geometry'], geometry='geometry', crs='EPSG:4326')
         self.loaded = True
 
     def add_file(self, file: OSMFile) -> None:
@@ -108,8 +113,8 @@ class OSMIndex:
         if not self.loaded:
             self.load_osm_fileindex()
 
-        new_row = {"name": file.name, "path": file.path, "geometry": file.extent}
-        self.gdf = self.gdf.append(new_row)
+        new_row = gpd.GeoDataFrame({"name": [file.name], "path": [file.path], "geometry": [file.extent]}, crs='EPSG:4326')
+        self.gdf = pd.concat([self.gdf, new_row], ignore_index= True)
 
     def save_osmindex(self, path: str = None) -> None:
         """
@@ -127,17 +132,13 @@ class OSMIndex:
             self.path = path
         self.gdf.to_file(filename=self.path, driver="GeoJSON", crs="EPSG:4326")
 
-    def isempty(self):
-        """Tests if currently loaded index is empty"""
-        return bool(len(self.gdf))
-
     def find_osm_file(self, gdf: gpd.GeoDataFrame) -> OSMFile:
         """
         Searches smallest available index entry that covers the extent of another GeoDataFrame
         param: gdf: geopandas.GeoDataFrame to cover
         return: matching_file: OSMFile that matches criteria or None if none found
         """
-        if self.isempty():
+        if self.gdf.empty:
             return None
 
         matching_rows = self.gdf.contains(gdf.unary_union)
@@ -164,7 +165,7 @@ def download_osm_data(geodata: gpd.GeoDataFrame) -> OSMFile:
     return: return_data: OSMFile object
     """
 
-    geofabrik_available = gpd.read_file("data/indices/geofabrik_downloadindex.json")
+    geofabrik_available = gpd.read_file("src/data/indices/geofabrik_downloadindex.json")
 
     # finding smallest available set covering gtfs feed
     matching_datasets = geofabrik_available.contains(geodata.unary_union)
@@ -173,7 +174,7 @@ def download_osm_data(geodata: gpd.GeoDataFrame) -> OSMFile:
     preferred_set = geofabrik_available.iloc[smallest]["id"]
     preferred_set_extent = geofabrik_available.iloc[smallest]["geometry"]
 
-    osm_path = pyrosm.get_data(dataset=preferred_set, directory="data/osm_data")
+    osm_path = pyrosm.get_data(dataset=preferred_set, directory="src/data/osm_data")
 
     # add set to index
     return_data = OSMFile(
@@ -191,7 +192,7 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     param: name: name under which a potentially cropped OSM data file is stored.
     return: matching_file: file matching the extent of the provided GeoDataFrame.
     """
-    index = OSMIndex(path="data/indices/osm_data.json")
+    index = OSMIndex(path="src/data/indices/osm_data.json")
     index.load_osm_fileindex()
     matching_file = index.find_osm_file(gdf=geodata)
 
@@ -203,5 +204,5 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
         matching_file.crop(geodata, name, inplace=True)
         index.add_file(matching_file)
 
-    index.save_osmindex(path="data/indices/osm_data.json")
+    index.save_osmindex(path="src/data/indices/osm_data.json")
     return matching_file
