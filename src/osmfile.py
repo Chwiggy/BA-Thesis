@@ -1,5 +1,3 @@
-
-
 import os
 import pandas as pd
 import geopandas as gpd
@@ -9,7 +7,6 @@ import fiona
 
 
 import subprocess
-
 
 
 class ErrorMissingPath(Exception):
@@ -96,13 +93,21 @@ class OSMIndex:
     def load_osm_fileindex(self) -> None:
         """Loads osm index into memory as a geopandas.GeoDataFrame"""
         if self.path is None:
-            self.gdf = gpd.GeoDataFrame(columns=['name', 'path', 'geometry'], geometry='geometry', crs='EPSG:4326')
+            self.gdf = gpd.GeoDataFrame(
+                columns=["name", "path", "geometry"],
+                geometry="geometry",
+                crs="EPSG:4326",
+            )
             self.loaded = True
             return
         try:
             self.gdf = gpd.read_file(self.path)
         except fiona.errors.DriverError:
-            self.gdf = gpd.GeoDataFrame(columns=['name', 'path', 'geometry'], geometry='geometry', crs='EPSG:4326')
+            self.gdf = gpd.GeoDataFrame(
+                columns=["name", "path", "geometry"],
+                geometry="geometry",
+                crs="EPSG:4326",
+            )
         self.loaded = True
 
     def add_file(self, file: OSMFile) -> None:
@@ -113,8 +118,11 @@ class OSMIndex:
         if not self.loaded:
             self.load_osm_fileindex()
 
-        new_row = gpd.GeoDataFrame({"name": [file.name], "path": [file.path], "geometry": [file.extent]}, crs='EPSG:4326')
-        self.gdf = pd.concat([self.gdf, new_row], ignore_index= True)
+        new_row = gpd.GeoDataFrame(
+            {"name": [file.name], "path": [file.path], "geometry": [file.extent]},
+            crs="EPSG:4326",
+        )
+        self.gdf = pd.concat([self.gdf, new_row], ignore_index=True)
 
     def save_osmindex(self, path: str = None) -> None:
         """

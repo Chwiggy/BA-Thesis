@@ -24,13 +24,11 @@ def main():
     )
     # TODO config file with save locations
 
-    matching_file = get_osm_data(geodata=stops_gdf, name = gtfs_name)
+    matching_file = get_osm_data(geodata=stops_gdf, name=gtfs_name)
 
     transport_network = r5py.TransportNetwork(
-        osm_pbf=matching_file.path,
-        gtfs=gtfs_path
-    ) 
-
+        osm_pbf=matching_file.path, gtfs=gtfs_path
+    )
 
     # TODO hexgrids and start locations
     # TODO find pois and create destination enum
@@ -42,5 +40,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
