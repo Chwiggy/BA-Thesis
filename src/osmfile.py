@@ -196,9 +196,11 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     """
     Acquires OSMdata either from local storage, or if no matching dataset is available by download from Geofabrik.
     If the filesize is too large for easy processing, the dataset is cropped to match the bounds of the geodata.
-    param: geodata: gpd.GeoDataFrame to whoose bounds the OSM data is matched.
-    param: name: name under which a potentially cropped OSM data file is stored.
-    return: matching_file: file matching the extent of the provided GeoDataFrame.
+    ## Parameters
+    geodata: gpd.GeoDataFrame to whoose bounds the OSM data is matched.
+    name: name under which a potentially cropped OSM data file is stored.
+    ## Return
+    matching_file: file matching the extent of the provided GeoDataFrame.
     """
     index = OSMIndex(path="src/data/indices/osm_data.json")
     index.load_osm_fileindex()
@@ -216,18 +218,25 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     return matching_file
 
 
-def extract_county_hexgrids(matching_file: OSMFile) -> dict:
-    osm_data = pyrosm.pyrosm.OSM(matching_file.path)
+def counties_to_hexgrids(counties: gpd.GeoDataFrame) -> dict:
+    """
+    Extracts counties from osm data and overlays h3 hexgrid.
+    ## Parameters
+    counties: GeoDataFrame with counties extracted by pyrosm
+    ## Return
+    hexgrid_per_county: dict of format {name: GeoDataFrame} with hexgrids for each countie in counties
+    """
+    hexgrid = counties.h3.polyfill_resample(10)
+    hexgrid.rename(columns={"id": "county_id", "h3_polyfill": "id"}, inplace=True)
+    hexgrid_per_county = {}
+    for name in counties["name"]:
+        county_hexgrid = hexgrid.loc[hexgrid["name"] == name]
+        hexgrid_per_county[str(name)] = county_hexgrid
+    return hexgrid_per_county
+
+
+def extract_counties(osm_data: pyrosm.pyrosm.OSM) -> gpd.GeoDataFrame:
     admin_boundaries = osm_data.get_boundaries()
     # TODO add admin_levels enum for different countries
     counties = admin_boundaries[admin_boundaries["admin_level"] == "6"]
-
-    hexgrid = counties.h3.polyfill_resample(10)
-    hexgrid.rename(columns={"id": "county_id", "h3_polyfill": "id"}, inplace=True)
-    start_loc_per_county = {}
-    for name in counties["name"]:
-        county_hexgrid = hexgrid.loc[hexgrid["name"] == name]
-        county_hexgrid_centroids = county_hexgrid.copy()
-        county_hexgrid_centroids["geometry"] = county_hexgrid.centroid
-        start_loc_per_county[str(name)] = county_hexgrid_centroids
-    return start_loc_per_county
+    return counties
