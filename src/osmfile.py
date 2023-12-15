@@ -214,3 +214,20 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
 
     index.save_osmindex(path="src/data/indices/osm_data.json")
     return matching_file
+
+
+def extract_county_hexgrids(matching_file: OSMFile) -> dict:
+    osm_data = pyrosm.pyrosm.OSM(matching_file.path)
+    admin_boundaries = osm_data.get_boundaries()
+    # TODO add admin_levels enum for different countries
+    counties = admin_boundaries[admin_boundaries["admin_level"] == "6"]
+
+    hexgrid = counties.h3.polyfill_resample(10)
+    hexgrid.rename(columns={"id": "county_id", "h3_polyfill": "id"}, inplace=True)
+    start_loc_per_county = {}
+    for name in counties["name"]:
+        county_hexgrid = hexgrid.loc[hexgrid["name"] == name]
+        county_hexgrid_centroids = county_hexgrid.copy()
+        county_hexgrid_centroids["geometry"] = county_hexgrid.centroid
+        start_loc_per_county[str(name)] = county_hexgrid_centroids
+    return start_loc_per_county
