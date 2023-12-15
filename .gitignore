@@ -4,3 +4,4 @@ src/data/osm_data
 src/data/indices/osm_data.json
 src/__pycache__/
 .vscode/launch.json
+data/output
