@@ -249,7 +249,7 @@ def extract_counties(osm_data: pyrosm.pyrosm.OSM) -> gpd.GeoDataFrame:
     return counties
 
 
-def destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
+def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
     destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
     destinations_centroids = destinations.copy()
     destinations_centroids['geometry']= destinations.centroid
