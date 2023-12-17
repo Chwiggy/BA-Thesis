@@ -36,44 +36,38 @@ def main():
     # hexgrids per county in dataframe
     counties = osmfile.extract_counties(osm_data)
     county_hexgrids = osmfile.counties_to_hexgrids(counties)
-    
-    # TODO find pois and create destination enum
-    class Destination(Enum):
-        SCHOOLS = auto()
-        SELF = auto()
-    
+
     desired_destination = Destination.SCHOOLS
-    if desired_destination is Destination.SCHOOLS:
-        filter = {"amenity": ["school"]}
-    
-    destinations = osmfile.destinations(osm_data, filter)
+    if desired_destination == Destination.SELF:
+        raise NotImplementedError
+        # TODO add way to make it work on itself
+    else:
+        destinations = find_destinations(osm_data, Destination, desired_destination)
 
     transport_network = r5py.TransportNetwork(
         osm_pbf=matching_file.path, gtfs=gtfs_path
     )
 
     for county, hexgrid in county_hexgrids.items():
-        hexgrid_centroids = hexgrid.copy()
-        hexgrid_centroids["geometry"] = hexgrid.centroid
-        
+        hexgrid_centroids = centroids(hexgrid)
+
         boundary = hexgrid.unary_union
         clipping_buffer = boundary.buffer(distance=0.05)
         clipped_destinations = destinations.clip(clipping_buffer)
 
         travel_time_matrix_computer = r5py.TravelTimeMatrixComputer(
             transport_network,
-            origins= hexgrid_centroids,
-            destinations= clipped_destinations,
+            origins=hexgrid_centroids,
+            destinations=clipped_destinations,
             departure=datetime.datetime(2023, 12, 5, 6, 30),
-            transport_modes=[
-                r5py.TransportMode.WALK,
-                r5py.TransportMode.TRANSIT
-                ],
+            transport_modes=[r5py.TransportMode.WALK, r5py.TransportMode.TRANSIT],
         )
 
         travel_times = travel_time_matrix_computer.compute_travel_times()
 
-        travel_time_pivot = travel_times.pivot(index="from_id", columns="to_id", values="travel_time")
+        travel_time_pivot = travel_times.pivot(
+            index="from_id", columns="to_id", values="travel_time"
+        )
         travel_time_pivot["mean"] = travel_time_pivot.mean(axis=1)
         travel_time_pivot = travel_time_pivot[["mean"]]
 
@@ -82,7 +76,22 @@ def main():
         results.plot(column="mean", cmap="magma_r")
         plt.savefig(f"/home/emily/thesis_BA/data/output/{gtfs_name}_{county}.png")
         plt.close
-    
+
+class Destination(Enum):
+        SCHOOLS = auto()
+        SELF = auto()
+
+def centroids(hexgrid):
+    hexgrid_centroids = hexgrid.copy()
+    hexgrid_centroids["geometry"] = hexgrid.centroid
+    return hexgrid_centroids
+
+def find_destinations(osm_data, Destination, desired_destination):
+    if desired_destination is Destination.SCHOOLS:
+        filter = {"amenity": ["school"]}
+
+    destinations = osmfile.extract_destinations(osm_data, filter)
+    return destinations
 
 
 if __name__ == "__main__":
