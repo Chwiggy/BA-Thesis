@@ -51,9 +51,7 @@ def main():
     for county, hexgrid in county_hexgrids.items():
         hexgrid_centroids = centroids(hexgrid)
 
-        boundary = hexgrid.unary_union
-        clipping_buffer = boundary.buffer(distance=0.05)
-        clipped_destinations = destinations.clip(clipping_buffer)
+        clipped_destinations = clip_destinations(destinations, hexgrid)
 
         travel_time_matrix_computer = r5py.TravelTimeMatrixComputer(
             transport_network,
@@ -77,20 +75,26 @@ def main():
         plt.savefig(f"/home/emily/thesis_BA/data/output/{gtfs_name}_{county}.png")
         plt.close
 
+def clip_destinations(destinations, hexgrid):
+    boundary = hexgrid.unary_union
+    clipping_buffer = boundary.buffer(distance=0.05)
+    clipped_destinations = destinations.clip(clipping_buffer)
+    return clipped_destinations
+
 class Destination(Enum):
         SCHOOLS = auto()
         SELF = auto()
 
-def centroids(hexgrid):
+def centroids(hexgrid: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     hexgrid_centroids = hexgrid.copy()
     hexgrid_centroids["geometry"] = hexgrid.centroid
     return hexgrid_centroids
 
-def find_destinations(osm_data, Destination, desired_destination):
+def find_destinations(osm_data, desired_destination: Destination.__members__) -> gpd.GeoDataFrame:
     if desired_destination is Destination.SCHOOLS:
         filter = {"amenity": ["school"]}
 
-    destinations = osmfile.extract_destinations(osm_data, filter)
+    destinations = osmfile.extract_destinations(osm_data=osm_data, filter=filter)
     return destinations
 
 
