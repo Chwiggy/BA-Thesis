@@ -209,6 +209,8 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     if matching_file is None:
         matching_file = download_osm_data(geodata=geodata)
         index.add_file(matching_file)
+    
+    # TODO add comparison between found file and smallest geofabrik file
 
     if os.path.getsize(matching_file.path) > 500000000:
         matching_file.crop(geodata, name, inplace=True)
