@@ -1,18 +1,22 @@
 import os
 import zipfile
+import datetime
 import geopandas as gpd
 import pandas as pd
+import shapely
 import pyrosm
 import r5py
 import osmfile
 import h3pandas as h3
 from sys import argv
+from enum import Enum, auto
+from matplotlib import pyplot as plt
 
 
 def main():
     # TODO argparse?
     gtfs_path = argv[1]
-    gtfs_name = os.path.basename(gtfs_path)
+    gtfs_name, _ = os.path.basename(gtfs_path).split(sep=".")
 
     # TODO read in gtfs feed
     with zipfile.ZipFile(gtfs_path) as gtfs:
@@ -32,17 +36,53 @@ def main():
     # hexgrids per county in dataframe
     counties = osmfile.extract_counties(osm_data)
     county_hexgrids = osmfile.counties_to_hexgrids(counties)
-
+    
     # TODO find pois and create destination enum
+    class Destination(Enum):
+        SCHOOLS = auto()
+        SELF = auto()
+    
+    desired_destination = Destination.SCHOOLS
+    if desired_destination is Destination.SCHOOLS:
+        filter = {"amenity": ["school"]}
+    
+    destinations = osmfile.destinations(osm_data, filter)
 
     transport_network = r5py.TransportNetwork(
         osm_pbf=matching_file.path, gtfs=gtfs_path
     )
+
+    for county, hexgrid in county_hexgrids.items():
+        hexgrid_centroids = hexgrid.copy()
+        hexgrid_centroids["geometry"] = hexgrid.centroid
+        
+        boundary = hexgrid.unary_union
+        clipping_buffer = boundary.buffer(distance=0.05)
+        clipped_destinations = destinations.clip(clipping_buffer)
+
+        travel_time_matrix_computer = r5py.TravelTimeMatrixComputer(
+            transport_network,
+            origins= hexgrid_centroids,
+            destinations= clipped_destinations,
+            departure=datetime.datetime(2023, 12, 5, 6, 30),
+            transport_modes=[
+                r5py.TransportMode.WALK,
+                r5py.TransportMode.TRANSIT
+                ],
+        )
+
+        travel_times = travel_time_matrix_computer.compute_travel_times()
+
+        travel_time_pivot = travel_times.pivot(index="from_id", columns="to_id", values="travel_time")
+        travel_time_pivot["mean"] = travel_time_pivot.mean(axis=1)
+        travel_time_pivot = travel_time_pivot[["mean"]]
+
+        results = hexgrid.join(other=travel_time_pivot, on="id")
+
+        results.plot(column="mean", cmap="magma_r")
+        plt.savefig(f"/home/emily/thesis_BA/data/output/{gtfs_name}_{county}.png")
+        plt.close
     
-    # TODO hexgrid centroids
-    # TODO instantiate TravelTimeMatrixComputer object from r5py
-    # TODO loop over counties with travel time matrix calculations
-    # TODO output plots and data files
 
 
 if __name__ == "__main__":

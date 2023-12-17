@@ -229,6 +229,7 @@ def counties_to_hexgrids(counties: gpd.GeoDataFrame) -> dict:
     hexgrid_per_county: dict of format {name: GeoDataFrame} with hexgrids for each countie in counties
     """
     hexgrid = counties.h3.polyfill_resample(10)
+    hexgrid.reset_index(inplace=True)
     hexgrid.rename(columns={"id": "county_id", "h3_polyfill": "id"}, inplace=True)
     hexgrid_per_county = {}
     for name in counties["name"]:
@@ -242,3 +243,10 @@ def extract_counties(osm_data: pyrosm.pyrosm.OSM) -> gpd.GeoDataFrame:
     # TODO add admin_levels enum for different countries
     counties = admin_boundaries[admin_boundaries["admin_level"] == "6"]
     return counties
+
+
+def destinations(osm_data, filter):
+    destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
+    destinations_centroids = destinations.copy()
+    destinations_centroids['geometry']= destinations.centroid
+    return destinations_centroids
