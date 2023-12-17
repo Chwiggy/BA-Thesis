@@ -216,7 +216,7 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     else:
         matching_file = local_file
 
-    if os.path.getsize(matching_file.path) > 500000000:
+    if os.path.getsize(matching_file.path) > 700000000:
         matching_file.crop(geodata, name, inplace=True)
         index.add_file(matching_file)
 

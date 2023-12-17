@@ -15,6 +15,8 @@ def destinations_from_osm(
 ) -> gpd.GeoDataFrame:
     if desired_destination is Destination.SCHOOLS:
         filter = {"amenity": ["school"]}
+    else:
+        raise NotImplementedError
 
     destinations = osmfile.extract_destinations(osm_data=osm_data, filter=filter)
     return destinations
@@ -37,7 +39,7 @@ def find_destinations(osm_data: pyrosm.pyrosm.OSM, desired_destination: Destinat
         destinations = pd.concat(centroid_list, ignore_index=True)
         return destinations
 
-    destinations = destinations_from_osm(osm_data, Destination, desired_destination)
+    destinations = destinations_from_osm(osm_data, desired_destination)
     return destinations
 
 

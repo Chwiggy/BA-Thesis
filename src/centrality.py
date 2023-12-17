@@ -7,6 +7,7 @@ def closeness_centrality(
     transport_network: r5py.TransportNetwork,
     hexgrid: gpd.GeoDataFrame,
     destinations: gpd.GeoDataFrame,
+    departure: datetime.datetime
 ) -> gpd.GeoDataFrame:
     # TODO add way to automaticall set departure
     hexgrid_centroids = centroids(hexgrid)
@@ -15,7 +16,7 @@ def closeness_centrality(
         transport_network,
         origins=hexgrid_centroids,
         destinations=destinations,
-        departure=datetime.datetime(2023, 12, 5, 6, 30),
+        departure=departure,
         transport_modes=[r5py.TransportMode.WALK, r5py.TransportMode.TRANSIT],
     )
 

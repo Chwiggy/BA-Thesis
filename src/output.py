@@ -4,6 +4,8 @@ from matplotlib import pyplot as plt
 
 def to_png(name: str, county: str, results: gpd.GeoDataFrame):
     results.plot(column="mean", cmap="magma_r")
+    plt.title(label=name)
+    plt.legend()
     plt.savefig(f"/home/emily/thesis_BA/data/output/{name}_{county}.png")
     plt.close
 
