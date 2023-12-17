@@ -166,27 +166,29 @@ class OSMIndex:
         return matching_file
 
 
-def download_osm_data(geodata: gpd.GeoDataFrame) -> OSMFile:
+def find_online_data(gdf: gpd.GeoDataFrame):
     """
     Downloads an OSM dataset from geofabrik that covers the extent of the provided GeoDataFrame
-    param: geodata: gpd.GeoDataFrame
+    param: gdf: gpd.GeoDataFrame
     return: return_data: OSMFile object
     """
 
     geofabrik_available = gpd.read_file("src/data/indices/geofabrik_downloadindex.json")
 
     # finding smallest available set covering gtfs feed
-    matching_datasets = geofabrik_available.contains(geodata.unary_union)
+    matching_datasets = geofabrik_available.contains(gdf.unary_union)
     coverage = geofabrik_available[matching_datasets]["geometry"].area
     smallest = coverage.idxmin()
     preferred_set = geofabrik_available.iloc[smallest]["id"]
     preferred_set_extent = geofabrik_available.iloc[smallest]["geometry"]
+    
+    return preferred_set, preferred_set_extent
 
-    osm_path = pyrosm.get_data(dataset=preferred_set, directory="src/data/osm_data")
 
-    # add set to index
+def download_osm_data(id: str, extent):
+    osm_path = pyrosm.get_data(dataset=id, directory="src/data/osm_data")
     return_data = OSMFile(
-        path=osm_path, extent=preferred_set_extent, name=preferred_set
+        path=osm_path, extent=extent, name=id
     )
 
     return return_data
@@ -204,13 +206,15 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     """
     index = OSMIndex(path="src/data/indices/osm_data.json")
     index.load_osm_fileindex()
-    matching_file = index.find_osm_file(gdf=geodata)
-
-    if matching_file is None:
-        matching_file = download_osm_data(geodata=geodata)
-        index.add_file(matching_file)
     
-    # TODO add comparison between found file and smallest geofabrik file
+    local_file = index.find_osm_file(gdf=geodata)
+    osm_file_id, osm_file_extent = find_online_data(gdf=geodata)
+    
+    if local_file is None or local_file.extent.area > osm_file_extent.area:
+        matching_file = download_osm_data(id=osm_file_id, extent=osm_file_extent)
+        index.add_file(matching_file)
+    else:
+        matching_file = local_file
 
     if os.path.getsize(matching_file.path) > 500000000:
         matching_file.crop(geodata, name, inplace=True)
@@ -245,7 +249,7 @@ def extract_counties(osm_data: pyrosm.pyrosm.OSM) -> gpd.GeoDataFrame:
     return counties
 
 
-def destinations(osm_data, filter):
+def destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
     destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
     destinations_centroids = destinations.copy()
     destinations_centroids['geometry']= destinations.centroid
