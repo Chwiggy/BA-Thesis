@@ -15,6 +15,7 @@ from output import to_png
 
 
 def main():
+    # TODO clean this up, maybe processing library
     # TODO config file with save locations and destination types
     # TODO argparse?
     gtfs_path = argv[1]
