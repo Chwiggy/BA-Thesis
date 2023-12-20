@@ -1,16 +1,17 @@
 import argparse
 import osmfile
+import osmnx as ox
 from destination import Destination
 
 def main(place_name: str, gtfs_path: str):
 
-    place = place_input(place_name) # TODO flesh that out
+    place = geocoding(place_name) # TODO flesh that out
     gtfs_cropped = crop_gtfs(gtfs_path)
     osm_data = osmfile.get_osm_data(geodata=place, name = place_name)
     
 
     for destination in Destination.__members__:
-        # TODO clean up processing and insert
+        # TODO clean up processing in batch.py and insert
         raise NotImplementedError
 
 def cli_input():
@@ -22,6 +23,9 @@ def cli_input():
     gtfs_path = args.gtfs
     return place_name,gtfs_path
 
+
+def geocoding(place_name):
+    ox.geocode_to_gdf(query=place_name)
 
 
 if __name__ == "__main__":
