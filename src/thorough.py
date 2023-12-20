@@ -3,9 +3,6 @@ import osmfile
 from destination import Destination
 
 def main(place_name: str, gtfs_path: str):
-    if place_name is None or gtfs_path is None:
-        raise ValueError
-
 
     place = place_input(place_name) # TODO flesh that out
     gtfs_cropped = crop_gtfs(gtfs_path)
