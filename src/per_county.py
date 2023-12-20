@@ -2,18 +2,13 @@ import argparse
 import osmfile
 from destination import Destination
 
-def main():
-    # user input
-    parser = argparse.ArgumentParser(description="all closeness centrality calculations for one county")
-    parser.add_argument("county")
-    parser.add_argument("-g", '--gtfs')
-    args = parser.parse_args()
-    place_name = args.county
-    gtfs_path = args.gtfs
+def main(place_name: str, gtfs_path: str):
+    if place_name is None or gtfs_path is None:
+        raise ValueError
 
 
     place = place_input(place_name) # TODO flesh that out
-    gtfs_cropped = crop_gtfs()
+    gtfs_cropped = crop_gtfs(gtfs_path)
     osm_data = osmfile.get_osm_data(geodata=place, name = place_name)
     
 
@@ -21,7 +16,17 @@ def main():
         # TODO clean up processing and insert
         raise NotImplementedError
 
+def cli_input():
+    parser = argparse.ArgumentParser(description="all closeness centrality calculations for one county")
+    parser.add_argument("county")
+    parser.add_argument("-g", '--gtfs')
+    args = parser.parse_args()
+    place_name = args.county
+    gtfs_path = args.gtfs
+    return place_name,gtfs_path
+
 
 
 if __name__ == "__main__":
-    main()
+    place_name, gtfs_path = cli_input()
+    main(place_name, gtfs_path)
