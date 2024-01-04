@@ -2,11 +2,12 @@ import argparse
 import osmfile
 import osmnx as ox
 from destination import Destination
+from gtfs import crop_gtfs
 
 def main(place_name: str, gtfs_path: str):
 
-    place = geocoding(place_name) # TODO flesh that out
-    gtfs_cropped = crop_gtfs(gtfs_path)
+    place = geocoding(place_name)
+    gtfs_cropped = crop_gtfs(gtfs_path, place)
     osm_data = osmfile.get_osm_data(geodata=place, name = place_name)
     
 
@@ -25,7 +26,12 @@ def cli_input():
 
 
 def geocoding(place_name):
-    ox.geocode_to_gdf(query=place_name)
+    try:
+        location = ox.geocode_to_gdf(query=place_name)
+    except ConnectionError:
+        raise NotImplementedError
+    except ox._errors.InsufficientResponseError:
+        raise NotImplementedError
 
 
 if __name__ == "__main__":
