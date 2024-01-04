@@ -8,6 +8,9 @@ import zipfile
 
 import destination
 
+def crop_gtfs(gtfs: str, place: gpd.GeoDataFrame) -> str:
+    raise NotImplementedError
+    #TODO crop gtfs to file 
 
 def dataframe_from_stops(gtfs_path: str) -> gpd.GeoDataFrame:
     with zipfile.ZipFile(gtfs_path) as gtfs:
