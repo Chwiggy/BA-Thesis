@@ -32,6 +32,7 @@ def geocoding(place_name):
         raise NotImplementedError
     except ox._errors.InsufficientResponseError:
         raise NotImplementedError
+    #TODO error handling
 
 
 if __name__ == "__main__":
