@@ -1,5 +1,7 @@
 import argparse
 import osmfile
+import pyrosm
+import r5py
 import osmnx as ox
 from destination import Destination
 from gtfs import crop_gtfs
@@ -7,9 +9,15 @@ from gtfs import crop_gtfs
 def main(place_name: str, gtfs_path: str):
 
     place = geocoding(place_name)
-    gtfs_cropped = crop_gtfs(gtfs_path, place)
-    osm_data = osmfile.get_osm_data(geodata=place, name = place_name)
     
+    osm_file = osmfile.get_osm_data(geodata=place, name = place_name)
+    osm_data = pyrosm.pyrosm.OSM(osm_file.path)
+    
+    gtfs_cropped = crop_gtfs(gtfs_path, place)
+    
+    transport_network = r5py.TransportNetwork(
+        osm_pbf=osm_file.path, gtfs=gtfs_cropped
+    )
 
     for destination in Destination.__members__:
         # TODO clean up processing in batch.py and insert
