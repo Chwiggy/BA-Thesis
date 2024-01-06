@@ -18,7 +18,7 @@ def main(place_name: str, gtfs_path: str):
     )
 
     transit_feed = gtfs.GTFS(path = gtfs_path)
-    gtfs_cropped = gtfs.crop_gtfs(gtfs_path, place)
+    #TODO gtfs_cropped = gtfs.crop_gtfs(gtfs_path, place)
 
     place = geocoding(place_name)
     

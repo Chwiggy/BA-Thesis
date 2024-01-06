@@ -3,6 +3,7 @@ import pandas as pd
 import pyrosm
 import osmfile
 from enum import Enum, auto
+import gtfs
 
 
 class Destination(Enum):
@@ -28,7 +29,11 @@ def centroids(hexgrid: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return hexgrid_centroids
 
 
-def find_destinations(osm_data: pyrosm.pyrosm.OSM, desired_destination: Destination.__members__, county_hexgrids: gpd.GeoDataFrame = None) -> gpd.GeoDataFrame:
+def find_batch_destinations(
+    osm_data: pyrosm.pyrosm.OSM,
+    desired_destination: Destination.__members__,
+    county_hexgrids: gpd.GeoDataFrame = None,
+) -> gpd.GeoDataFrame:
     if desired_destination == Destination.SELF:
         if county_hexgrids is None:
             raise ValueError
@@ -41,6 +46,25 @@ def find_destinations(osm_data: pyrosm.pyrosm.OSM, desired_destination: Destinat
 
     destinations = destinations_from_osm(osm_data, desired_destination)
     return destinations
+
+
+def find_destinations(
+    osm_data: pyrosm.pyrosm.OSM,
+    desired_destination: Destination.__members__,
+    location: gpd.GeoDataFrame,
+) -> gpd.GeoDataFrame:
+    match desired_destination:
+        case Destination.SCHOOLS:
+            name = "osm_schools"
+            destination = #TODO NEEDS work,
+            departure_time = gtfs.departure_time()
+        case Destination.SELF:
+            raise NotImplementedError
+    
+    
+    
+    return name, destination, departure_time
+            
 
 
 def clip_destinations(destinations, hexgrid):
