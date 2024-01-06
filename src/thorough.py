@@ -1,12 +1,14 @@
 import argparse
-import sys
 import logging as log
 import osmfile
 import pyrosm
 import r5py
-import osmnx as ox
+import geopandas as gpd
+import pandas as pd
+import h3pandas
 from destination import Destination
 from gtfs import crop_gtfs
+from osmfile import geocoding
 
 def main(place_name: str, gtfs_path: str):
     
@@ -26,9 +28,18 @@ def main(place_name: str, gtfs_path: str):
         osm_pbf=osm_file.path, gtfs=gtfs_cropped
     )
 
+    #TODO Hexgrids
+    hexgrid = place.h3.polyfill_resample(10)
+    hexgrid.reset_index(inplace=True)
+    hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
+
+        
+
     for destination in Destination.__members__:
         # TODO clean up processing in batch.py and insert
         raise NotImplementedError
+    
+    
 
 def cli_input():
     parser = argparse.ArgumentParser(description="all closeness centrality calculations for one county")
@@ -38,22 +49,6 @@ def cli_input():
     place_name = args.county
     gtfs_path = args.gtfs
     return place_name,gtfs_path
-
-
-def geocoding(place_name):
-    while True:
-        try:
-            return ox.geocode_to_gdf(query=place_name)
-        except ConnectionError:
-            log.critical(msg="This operation needs a network connection. Terminating application")
-            sys.exit()
-        except ox._errors.InsufficientResponseError:
-            log.error("Couldn't find a location matching the location selected. Please try again! Or type quit to exit.")
-            place_name = input("location: ")
-            
-            if place_name == "quit":
-                sys.exit()
-            else: continue
 
 
 if __name__ == "__main__":

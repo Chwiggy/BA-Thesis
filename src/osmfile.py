@@ -1,4 +1,7 @@
+import logging as log
 import os
+import osmnx as ox
+import sys
 import pandas as pd
 import geopandas as gpd
 import pyrosm
@@ -254,3 +257,19 @@ def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDa
     destinations_centroids = destinations.copy()
     destinations_centroids['geometry']= destinations.centroid
     return destinations_centroids
+
+
+def geocoding(place_name: str) -> gpd.GeoDataFrame:
+    while True:
+        try:
+            return ox.geocode_to_gdf(query=place_name)
+        except ConnectionError:
+            log.critical(msg="This operation needs a network connection. Terminating application")
+            sys.exit()
+        except ox._errors.InsufficientResponseError:
+            log.error("Couldn't find a location matching the location selected. Please try again! Or type quit to exit.")
+            place_name = input("location: ")
+
+            if place_name == "quit":
+                sys.exit()
+            else: continue
