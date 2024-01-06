@@ -1,6 +1,4 @@
 import argparse
-import shapely
-import pyrosm
 import r5py
 import h3pandas as h3
 import destination
@@ -24,7 +22,7 @@ def main(gtfs_path: str):
     stops_gdf = transit_feed.dataframe_from_stops()
 
     matching_osm_file = osmfile.get_osm_data(geodata=stops_gdf, name=transit_feed.name)
-    osm_data = pyrosm.pyrosm.OSM(matching_osm_file.path)
+    osm_data = matching_osm_file.load_osm_data()
 
     # hexgrids per county in dataframe
     counties = destination.extract_counties(osm_data)

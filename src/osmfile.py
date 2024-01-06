@@ -81,6 +81,10 @@ class OSMFile:
         self.path = save_path
         self.extent = stops_extent
 
+    def load_osm_data(self) -> pyrosm.pyrosm.OSM:
+        """Returns pyrosm OSM data object"""
+        return pyrosm.pyrosm.OSM(self.path)
+
 
 class OSMIndex:
     """Class for index of osm data and associated operations"""

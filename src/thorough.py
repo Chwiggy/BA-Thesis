@@ -1,6 +1,5 @@
 import argparse
 import logging as log
-import pyrosm
 import r5py
 import geopandas as gpd
 import pandas as pd
@@ -29,8 +28,7 @@ def main(place_name: str, gtfs_path: str):
 
     
     matching_osm_file = osm.get_osm_data(geodata=buffered_place, name = place_name)
-    #TODO move this into destinations module
-    osm_data = pyrosm.pyrosm.OSM(matching_osm_file.path)
+    
     
     hexgrid = destination.places_to_hexgrids(place)
     
