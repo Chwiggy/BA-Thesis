@@ -40,18 +40,19 @@ def main(gtfs_path: str):
 
     departure = departure_time(desired_destination, transport_network)
 
-    for county, hexgrid in county_hexgrids.items():
+    for name in counties["name"]:
+        county_hexgrid = county_hexgrids.loc[county_hexgrids["name"] == name]
 
-        clipped_destinations = destination.clip_destinations(destinations, hexgrid)
+        clipped_destinations = destination.clip_destinations(destinations, county_hexgrid)
 
         results = centrality.closeness_centrality(
             transport_network=transport_network,
-            hexgrid=hexgrid,
+            hexgrid=county_hexgrid,
             destinations=clipped_destinations,
             departure= departure
         )
 
-        to_png(transit_feed.name, county, results)
+        to_png(transit_feed.name, name=name, results=results)
 
 def cli_input():
     parser = argparse.ArgumentParser(description="closeness centrality calculations for all counties in one gtfs file")

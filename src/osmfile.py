@@ -184,7 +184,7 @@ def find_online_data(gdf: gpd.GeoDataFrame):
     smallest = coverage.idxmin()
     preferred_set = geofabrik_available.iloc[smallest]["id"]
     preferred_set_extent = geofabrik_available.iloc[smallest]["geometry"]
-    
+
     return preferred_set, preferred_set_extent
 
 
@@ -209,10 +209,10 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     """
     index = OSMIndex(path="src/data/indices/osm_data.json")
     index.load_osm_fileindex()
-    
+
     local_file = index.find_osm_file(gdf=geodata)
     osm_file_id, osm_file_extent = find_online_data(gdf=geodata)
-    
+
     if local_file is None or local_file.extent.area > osm_file_extent.area:
         matching_file = download_osm_data(id=osm_file_id, extent=osm_file_extent)
         index.add_file(matching_file)
@@ -227,22 +227,32 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     return matching_file
 
 
-def counties_to_hexgrids(counties: gpd.GeoDataFrame) -> dict:
+def counties_to_hexgrids(counties: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
-    Extracts counties from osm data and overlays h3 hexgrid.
+    Extracts counties from pyrosm admin boundary dataframe and overlays h3 hexgrid.
     ## Parameters
     counties: GeoDataFrame with counties extracted by pyrosm
     ## Return
-    hexgrid_per_county: dict of format {name: GeoDataFrame} with hexgrids for each countie in counties
+    hexgrid: gpd.GeoDataFrame with hexgrids
     """
     hexgrid = counties.h3.polyfill_resample(10)
     hexgrid.reset_index(inplace=True)
     hexgrid.rename(columns={"id": "county_id", "h3_polyfill": "id"}, inplace=True)
-    hexgrid_per_county = {}
-    for name in counties["name"]:
-        county_hexgrid = hexgrid.loc[hexgrid["name"] == name]
-        hexgrid_per_county[str(name)] = county_hexgrid
-    return hexgrid_per_county
+    return hexgrid
+
+    
+def places_to_hexgrids(place: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """
+    Extracts counties from osmnx query dataframe and overlays h3 hexgrid.
+    ## Parameters
+    place: GeoDataFrame with places geocoded with osmnx
+    ## Return
+    hexgrid: gpd.GeoDataFrame with hexgrids
+    """
+    hexgrid = place.h3.polyfill_resample(10)
+    hexgrid.reset_index(inplace=True)
+    hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
+    return hexgrid  
 
 
 def extract_counties(osm_data: pyrosm.pyrosm.OSM) -> gpd.GeoDataFrame:

@@ -1,6 +1,5 @@
 import argparse
 import logging as log
-import osmfile
 import pyrosm
 import r5py
 import geopandas as gpd
@@ -8,7 +7,7 @@ import pandas as pd
 import h3pandas
 from destination import Destination
 import gtfs
-from osmfile import geocoding
+import osmfile as osm
 import centrality
 
 def main(place_name: str, gtfs_path: str):
@@ -17,12 +16,18 @@ def main(place_name: str, gtfs_path: str):
         format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.INFO
     )
 
-    transit_feed = gtfs.GTFS(path = gtfs_path)
-    #TODO gtfs_cropped = gtfs.crop_gtfs(gtfs_path, place)
-
-    place = geocoding(place_name)
+    place = osm.geocoding(place_name)
+    buffered_place = place.copy()
+    buffered_place['geometry'] = place.buffer(distance=0.05)
     
-    matching_osm_file = osmfile.get_osm_data(geodata=place, name = place_name)
+    transit_feed = gtfs.GTFS(path = gtfs_path)
+    try:
+        transit_feed.crop_gtfs(buffered_place, inplace=True)
+    except NotImplementedError:
+        pass
+
+    
+    matching_osm_file = osm.get_osm_data(geodata=buffered_place, name = place_name)
     osm_data = pyrosm.pyrosm.OSM(matching_osm_file.path)
     
     transport_network = r5py.TransportNetwork(
@@ -30,9 +35,7 @@ def main(place_name: str, gtfs_path: str):
     )
 
     #Making Hexgrids
-    hexgrid = place.h3.polyfill_resample(10)
-    hexgrid.reset_index(inplace=True)
-    hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
+    hexgrid = osm.places_to_hexgrids(place)
 
     for destination in Destination.__members__:
         # TODO clean up processing in batch.py and insert
@@ -43,7 +46,9 @@ def main(place_name: str, gtfs_path: str):
             departure= #TODO Departure time processing,
             transport_modes=[r5py.TransportMode.WALK, r5py.TransportMode.TRANSIT],
         )
-    
+ 
+
+ 
     
 
 def cli_input():
