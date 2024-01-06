@@ -3,11 +3,12 @@ import geopandas as gpd
 import r5py
 from destination import centroids
 
+
 def closeness_centrality(
     transport_network: r5py.TransportNetwork,
     hexgrid: gpd.GeoDataFrame,
     destinations: gpd.GeoDataFrame,
-    departure: datetime.datetime
+    departure: datetime.datetime,
 ) -> gpd.GeoDataFrame:
     # TODO add way to automaticall set departure
     hexgrid_centroids = centroids(hexgrid)

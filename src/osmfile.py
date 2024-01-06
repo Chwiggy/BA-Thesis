@@ -1,7 +1,4 @@
-import logging as log
 import os
-import osmnx as ox
-import sys
 import pandas as pd
 import geopandas as gpd
 import pyrosm
@@ -190,9 +187,7 @@ def find_online_data(gdf: gpd.GeoDataFrame):
 
 def download_osm_data(id: str, extent):
     osm_path = pyrosm.get_data(dataset=id, directory="src/data/osm_data")
-    return_data = OSMFile(
-        path=osm_path, extent=extent, name=id
-    )
+    return_data = OSMFile(path=osm_path, extent=extent, name=id)
 
     return return_data
 
@@ -225,61 +220,3 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
 
     index.save_osmindex(path="src/data/indices/osm_data.json")
     return matching_file
-
-
-def counties_to_hexgrids(counties: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    """
-    Extracts counties from pyrosm admin boundary dataframe and overlays h3 hexgrid.
-    ## Parameters
-    counties: GeoDataFrame with counties extracted by pyrosm
-    ## Return
-    hexgrid: gpd.GeoDataFrame with hexgrids
-    """
-    hexgrid = counties.h3.polyfill_resample(10)
-    hexgrid.reset_index(inplace=True)
-    hexgrid.rename(columns={"id": "county_id", "h3_polyfill": "id"}, inplace=True)
-    return hexgrid
-
-    
-def places_to_hexgrids(place: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    """
-    Extracts counties from osmnx query dataframe and overlays h3 hexgrid.
-    ## Parameters
-    place: GeoDataFrame with places geocoded with osmnx
-    ## Return
-    hexgrid: gpd.GeoDataFrame with hexgrids
-    """
-    hexgrid = place.h3.polyfill_resample(10)
-    hexgrid.reset_index(inplace=True)
-    hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
-    return hexgrid  
-
-
-def extract_counties(osm_data: pyrosm.pyrosm.OSM) -> gpd.GeoDataFrame:
-    admin_boundaries = osm_data.get_boundaries()
-    # TODO add admin_levels enum for different countries
-    counties = admin_boundaries[admin_boundaries["admin_level"] == "6"]
-    return counties
-
-
-def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
-    destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
-    destinations_centroids = destinations.copy()
-    destinations_centroids['geometry']= destinations.centroid
-    return destinations_centroids
-
-
-def geocoding(place_name: str) -> gpd.GeoDataFrame:
-    while True:
-        try:
-            return ox.geocode_to_gdf(query=place_name)
-        except ConnectionError:
-            log.critical(msg="This operation needs a network connection. Terminating application")
-            sys.exit()
-        except ox._errors.InsufficientResponseError:
-            log.error("Couldn't find a location matching the location selected. Please try again! Or type quit to exit.")
-            place_name = input("location: ")
-
-            if place_name == "quit":
-                sys.exit()
-            else: continue

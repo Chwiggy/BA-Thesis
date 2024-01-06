@@ -1,14 +1,82 @@
+import sys
+import logging as log
 import geopandas as gpd
+import osmnx as ox
 import pandas as pd
 import pyrosm
-import osmfile
 from enum import Enum, auto
+from typing import Union
 import gtfs
+
+def geocoding(place_name: Union[str, list]) -> gpd.GeoDataFrame:
+    """
+    Nominatim place name lookup via osmnx. Returns first result.
+    Retries with user input if no result found.
+    param: place_name: string or list of strings with placenames to geocode
+    return: gpd.GeoDataFrame
+    """
+    while True:
+        try:
+            return ox.geocode_to_gdf(query=place_name)
+        except ConnectionError:
+            log.critical(msg="This operation needs a network connection. Terminating application")
+            sys.exit()
+        except ox._errors.InsufficientResponseError:
+            log.error("Couldn't find a location matching the location selected. Please try again! Or type quit to exit.")
+            place_name = input("location: ")
+
+            if place_name == "quit":
+                sys.exit()
+            else: continue
+
+def extract_counties(osm_data: pyrosm.pyrosm.OSM) -> gpd.GeoDataFrame:
+    """
+    Extracts boundaries of admin level 6 from pyrosm data
+    """
+    admin_boundaries = osm_data.get_boundaries()
+    # TODO add admin_levels enum for different countries
+    counties = admin_boundaries[admin_boundaries["admin_level"] == "6"]
+    return counties
+
+
+def counties_to_hexgrids(counties: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """
+    Extracts counties from pyrosm admin boundary dataframe and overlays h3 hexgrid.
+    ## Parameters
+    counties: GeoDataFrame with counties extracted by pyrosm
+    ## Return
+    hexgrid: gpd.GeoDataFrame with hexgrids
+    """
+    hexgrid = counties.h3.polyfill_resample(10)
+    hexgrid.reset_index(inplace=True)
+    hexgrid.rename(columns={"id": "county_id", "h3_polyfill": "id"}, inplace=True)
+    return hexgrid
+
+
+def places_to_hexgrids(place: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """
+    Extracts counties from osmnx query dataframe and overlays h3 hexgrid.
+    ## Parameters
+    place: GeoDataFrame with places geocoded with osmnx
+    ## Return
+    hexgrid: gpd.GeoDataFrame with hexgrids
+    """
+    hexgrid = place.h3.polyfill_resample(10)
+    hexgrid.reset_index(inplace=True)
+    hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
+    return hexgrid
 
 
 class Destination(Enum):
     SCHOOLS = auto()
     SELF = auto()
+
+
+def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
+    destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
+    destinations_centroids = destinations.copy()
+    destinations_centroids['geometry']= destinations.centroid
+    return destinations_centroids
 
 
 def destinations_from_osm(
@@ -19,7 +87,7 @@ def destinations_from_osm(
     else:
         raise NotImplementedError
 
-    destinations = osmfile.extract_destinations(osm_data=osm_data, filter=filter)
+    destinations = extract_destinations(osm_data=osm_data, filter=filter)
     return destinations
 
 
@@ -72,3 +140,15 @@ def clip_destinations(destinations, hexgrid):
     clipping_buffer = boundary.buffer(distance=0.05)
     clipped_destinations = destinations.clip(clipping_buffer)
     return clipped_destinations
+
+
+
+
+
+
+
+
+
+
+
+

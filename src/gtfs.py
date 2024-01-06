@@ -6,19 +6,20 @@ import zipfile
 import destination
 from pathlib import Path
 
-class GTFS():
-    def __init__(self, path:str) -> None:
+
+class GTFS:
+    def __init__(self, path: str) -> None:
         self.path = Path(path)
         if self.path.is_dir:
             self.name = self.path.name
             self.archived = False
         elif self.path.is_file:
-            self.name, _ = self.path.name.split(sep='.')
+            self.name, _ = self.path.name.split(sep=".")
             self.archived = True
 
     def crop_gtfs(self, place: gpd.GeoDataFrame, inplace: bool = False):
         raise NotImplementedError
-        #TODO crop gtfs to file 
+        # TODO crop gtfs to file
 
     def dataframe_from_stops(self) -> gpd.GeoDataFrame:
         """
@@ -54,8 +55,3 @@ def departure_time(desired_destination, transport_network):
         date = date.replace(hour=8, minute=0, second=0, microsecond=0)
 
     return date
-
-
-def name_from_path(gtfs_path):
-    gtfs_name, _ = os.path.basename(gtfs_path).split(sep=".")
-    return gtfs_name

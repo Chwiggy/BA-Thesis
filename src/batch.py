@@ -27,8 +27,8 @@ def main(gtfs_path: str):
     osm_data = pyrosm.pyrosm.OSM(matching_osm_file.path)
 
     # hexgrids per county in dataframe
-    counties = osmfile.extract_counties(osm_data)
-    county_hexgrids = osmfile.counties_to_hexgrids(counties)
+    counties = destination.extract_counties(osm_data)
+    county_hexgrids = destination.counties_to_hexgrids(counties)
 
     desired_destination = destination.Destination.SCHOOLS
     destinations = destination.find_batch_destinations(osm_data=osm_data, desired_destination=desired_destination, county_hexgrids=county_hexgrids)

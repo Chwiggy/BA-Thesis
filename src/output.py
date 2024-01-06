@@ -7,4 +7,5 @@ def to_png(name: str, county: str, results: gpd.GeoDataFrame):
     plt.savefig(f"/home/emily/thesis_BA/data/output/{name}_{county}.png")
     plt.close
 
+
 # TODO add geojson export
