@@ -2,28 +2,43 @@ import datetime
 import os
 import geopandas as gpd
 import pandas as pd
-
-
 import zipfile
-
 import destination
+from pathlib import Path
 
-def crop_gtfs(gtfs: str, place: gpd.GeoDataFrame) -> str:
-    raise NotImplementedError
-    #TODO crop gtfs to file 
+class GTFS():
+    def __init__(self, path:str) -> None:
+        self.path = Path(path)
+        if self.path.is_dir:
+            self.name = self.path.name
+            self.archived = False
+        elif self.path.is_file:
+            self.name, _ = self.path.name.split(sep='.')
+            self.archived = True
 
-def dataframe_from_stops(gtfs_path: str) -> gpd.GeoDataFrame:
-    with zipfile.ZipFile(gtfs_path) as gtfs:
-        with gtfs.open("stops.txt") as stops_file:
-            stops_df = pd.read_table(stops_file, sep=",")
+    def crop_gtfs(self, place: gpd.GeoDataFrame, inplace: bool = False):
+        raise NotImplementedError
+        #TODO crop gtfs to file 
 
-    stops_gdf = gpd.GeoDataFrame(
-        stops_df,
-        geometry=gpd.points_from_xy(stops_df.stop_lon, stops_df.stop_lat),
-        crs="EPSG:4326",
-    )
+    def dataframe_from_stops(self) -> gpd.GeoDataFrame:
+        """
+        Returns a gpd.GeoDataFrame with all stop locations in ESPG:4326
+        """
+        if self.archived:
+            with zipfile.ZipFile(self.path) as gtfs:
+                with gtfs.open("stops.txt") as stops_file:
+                    stops_df = pd.read_table(stops_file, sep=",")
+        elif not self.archived:
+            with open(Path(self.path, "stops.txt")) as stops_file:
+                stops_df = pd.read_table(stops_file, sep=",")
 
-    return stops_gdf
+        stops_gdf = gpd.GeoDataFrame(
+            stops_df,
+            geometry=gpd.points_from_xy(stops_df.stop_lon, stops_df.stop_lat),
+            crs="EPSG:4326",
+        )
+
+        return stops_gdf
 
 
 def departure_time(desired_destination, transport_network):

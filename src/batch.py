@@ -6,30 +6,36 @@ import h3pandas as h3
 import destination
 import centrality
 import osmfile
+import gtfs
+import logging as log
 from output import to_png
-from gtfs import departure_time, name_from_path, dataframe_from_stops
+from gtfs import departure_time
 
 
 def main(gtfs_path: str):
+    
+    log.basicConfig(
+        format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.INFO
+    )
+
     # TODO clean this up, maybe processing library
     # TODO config file with save locations and destination types
-    gtfs_name = name_from_path(gtfs_path)
+    transit_feed = gtfs.GTFS(path = gtfs_path)
+    stops_gdf = transit_feed.dataframe_from_stops()
 
-    stops_gdf = dataframe_from_stops(gtfs_path)
-
-    matching_file = osmfile.get_osm_data(geodata=stops_gdf, name=gtfs_name)
-    osm_data = pyrosm.pyrosm.OSM(matching_file.path)
+    matching_osm_file = osmfile.get_osm_data(geodata=stops_gdf, name=transit_feed.name)
+    osm_data = pyrosm.pyrosm.OSM(matching_osm_file.path)
 
     # hexgrids per county in dataframe
     counties = osmfile.extract_counties(osm_data)
     county_hexgrids = osmfile.counties_to_hexgrids(counties)
 
     desired_destination = destination.Destination.SCHOOLS
-    destinations = destination.find_destinations(osm_data=osm_data, desired_destination=desired_destination, county_hexgrids=county_hexgrids)
+    destinations = destination.find_batch_destinations(osm_data=osm_data, desired_destination=desired_destination, county_hexgrids=county_hexgrids)
 
     # TODO why on earth are you quietly terminating my script?
     transport_network = r5py.TransportNetwork(
-        osm_pbf=matching_file.path, gtfs=gtfs_path
+        osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
     )
 
     departure = departure_time(desired_destination, transport_network)
@@ -45,7 +51,7 @@ def main(gtfs_path: str):
             departure= departure
         )
 
-        to_png(gtfs_name, county, results)
+        to_png(transit_feed.name, county, results)
 
 def cli_input():
     parser = argparse.ArgumentParser(description="closeness centrality calculations for all counties in one gtfs file")
