@@ -4,8 +4,7 @@ import r5py
 import geopandas as gpd
 import pandas as pd
 import h3pandas
-from destination import Destination, geocoding
-import destination
+import destination as dst
 import gtfs
 import osmfile as osm
 import centrality
@@ -16,7 +15,7 @@ def main(place_name: str, gtfs_path: str):
         format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.INFO
     )
 
-    place = geocoding(place_name)
+    place = dst.geocoding(place_name)
     buffered_place = place.copy()
     buffered_place['geometry'] = place.buffer(distance=0.05)
     
@@ -30,14 +29,14 @@ def main(place_name: str, gtfs_path: str):
     matching_osm_file = osm.get_osm_data(geodata=buffered_place, name = place_name)
     
     
-    hexgrid = destination.places_to_hexgrids(place)
+    hexgrid = dst.places_to_hexgrids(place)
     
     transport_network = r5py.TransportNetwork(
         osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
     )
 
 
-    for destination in Destination.__members__:
+    for destination in dst.Destination.__members__:
         # TODO clean up processing in batch.py and insert
         centrality.closeness_centrality(
             transport_network=transport_network,
