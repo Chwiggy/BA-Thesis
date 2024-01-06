@@ -1,4 +1,6 @@
 import argparse
+import sys
+import logging as log
 import osmfile
 import pyrosm
 import r5py
@@ -7,6 +9,11 @@ from destination import Destination
 from gtfs import crop_gtfs
 
 def main(place_name: str, gtfs_path: str):
+    
+    log.basicConfig(
+        format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.INFO
+    )
+
 
     place = geocoding(place_name)
     
@@ -25,7 +32,7 @@ def main(place_name: str, gtfs_path: str):
 
 def cli_input():
     parser = argparse.ArgumentParser(description="all closeness centrality calculations for one county")
-    parser.add_argument("county")
+    parser.add_argument("place")
     parser.add_argument("-g", '--gtfs')
     args = parser.parse_args()
     place_name = args.county
@@ -34,13 +41,19 @@ def cli_input():
 
 
 def geocoding(place_name):
-    try:
-        location = ox.geocode_to_gdf(query=place_name)
-    except ConnectionError:
-        raise NotImplementedError
-    except ox._errors.InsufficientResponseError:
-        raise NotImplementedError
-    #TODO error handling
+    while True:
+        try:
+            return ox.geocode_to_gdf(query=place_name)
+        except ConnectionError:
+            log.critical(msg="This operation needs a network connection. Terminating application")
+            sys.exit()
+        except ox._errors.InsufficientResponseError:
+            log.error("Couldn't find a location matching the location selected. Please try again! Or type quit to exit.")
+            place_name = input("location: ")
+            
+            if place_name == "quit":
+                sys.exit()
+            else: continue
 
 
 if __name__ == "__main__":
