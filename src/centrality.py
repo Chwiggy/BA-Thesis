@@ -1,6 +1,8 @@
 import datetime
+import logging as log
 import geopandas as gpd
 import r5py
+import destination as dst
 
 
 def closeness_centrality(
@@ -9,7 +11,9 @@ def closeness_centrality(
     destinations: gpd.GeoDataFrame,
     departure: datetime.datetime,
 ) -> gpd.GeoDataFrame:
-    # TODO add way to automaticall set departure
+    # TODO add way to automatically set departure
+    # TODO deprecate in batch.py
+    log.warn(msg="This function is deprecated")
 
     travel_time_matrix_computer = r5py.TravelTimeMatrixComputer(
         transport_network,
@@ -29,3 +33,12 @@ def closeness_centrality(
 
     results = hexgrid.join(other=travel_time_pivot, on="id")
     return results
+
+
+def closeness_new(
+    transit: r5py.TransportNetwork,
+    hexgrid: gpd.GeoDataFrame,
+    destination=dst.DestinationSet,
+) -> gpd.GeoDataFrame:
+    # TODO add processing from above
+    pass

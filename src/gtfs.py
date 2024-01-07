@@ -43,15 +43,16 @@ class GTFS:
 
 
 def departure_time(desired_destination, transport_network):
+    # TODO how to make this work for more destinations and types
     start_date = transport_network.transit_layer.start_date
     end_date = transport_network.transit_layer.end_date
     delta = (end_date - start_date) / 2
     date = start_date + delta
-    if desired_destination == destination.Destination.SCHOOLS:
+    if desired_destination == destination.DestinationEnum.SCHOOLS:
         if date.weekday in (5, 6):
             date = date - datetime.timedelta(days=2)
         date = date.replace(hour=6, minute=30, second=0, microsecond=0)
-    elif desired_destination == destination.Destination.SELF:
+    elif desired_destination == destination.DestinationEnum.SELF:
         date = date.replace(hour=8, minute=0, second=0, microsecond=0)
 
     return date
