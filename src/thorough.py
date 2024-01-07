@@ -41,16 +41,14 @@ def main(place_name: str, gtfs_path: str):
         )
         destinations.append(destination)
     for file in Path("../data/destinations").iterdir():
-        match file:
-            case file.is_dir:
-                continue
-            case file.match("*.csv"):
-                destinations.append(file)
-            case file.match("*.json"):
-                pass
+        destination = dst.local_destination_set(file)
+        if destination is None:
+            continue
+        destinations.append(destination)
 
+            
         # TODO process destination data
-        log.info
+        
         # TODO clean up processing in batch.py and insert
         centrality.closeness_centrality(
             transport_network=transport_network,

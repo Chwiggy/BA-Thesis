@@ -10,6 +10,7 @@ from typing import Union
 import gtfs
 import osmfile as osm
 from dataclasses import dataclass
+from pathlib import Path
 
 def geocoding(place_name: Union[str, list]) -> gpd.GeoDataFrame:
     """
@@ -108,11 +109,21 @@ def osm_destination_set(osm_file: osm.OSMFile, desired_destination: DestinationE
     return DestinationSet(name=name, destinations=centroids, departure_time=time, reversed=reversed)
 
 
+def local_destination_set(file: Path) -> Union[gpd.GeoDataFrame, None]:
+    if file.is_dir():
+        return None
+    elif file.match('*.csv'):
+        df = pd.read_csv(filepath_or_buffer=file)
+        # TODO think about data to use
+
 def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
     destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
     destinations_centroids = destinations.copy()
     destinations_centroids['geometry']= destinations.centroid
     return destinations_centroids
+
+
+
 
 
 def destinations_from_osm(
