@@ -40,10 +40,9 @@ def main(place_name: str, gtfs_path: str):
         # TODO clean up processing in batch.py and insert
         centrality.closeness_centrality(
             transport_network=transport_network,
-            hexgrid=hexgrid,
+            hexgrid=dst.centroids(hexgrid),
             destinations= #TODO process destinations,
             departure= #TODO Departure time processing,
-            transport_modes=[r5py.TransportMode.WALK, r5py.TransportMode.TRANSIT],
         )
  
 

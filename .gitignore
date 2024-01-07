@@ -6,3 +6,4 @@ src/__pycache__/
 .vscode/launch.json
 data/output
 src/cache
+data/destinations

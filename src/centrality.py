@@ -1,7 +1,6 @@
 import datetime
 import geopandas as gpd
 import r5py
-from destination import centroids
 
 
 def closeness_centrality(
@@ -11,11 +10,10 @@ def closeness_centrality(
     departure: datetime.datetime,
 ) -> gpd.GeoDataFrame:
     # TODO add way to automaticall set departure
-    hexgrid_centroids = centroids(hexgrid)
 
     travel_time_matrix_computer = r5py.TravelTimeMatrixComputer(
         transport_network,
-        origins=hexgrid_centroids,
+        origins=hexgrid,
         destinations=destinations,
         departure=departure,
         transport_modes=[r5py.TransportMode.WALK, r5py.TransportMode.TRANSIT],

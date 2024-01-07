@@ -45,7 +45,7 @@ def main(gtfs_path: str):
 
         results = centrality.closeness_centrality(
             transport_network=transport_network,
-            hexgrid=county_hexgrid,
+            hexgrid=destination.centroids(county_hexgrid),
             destinations=clipped_destinations,
             departure= departure
         )
