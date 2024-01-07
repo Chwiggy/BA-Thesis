@@ -1,4 +1,5 @@
 import os
+import logging as log
 import pandas as pd
 import geopandas as gpd
 import pyrosm
@@ -57,6 +58,7 @@ class OSMFile:
         save_path = f"src/data/osm_data/{name}.osm.pbf"
 
         # cropping pbf to bounding box with osmosis
+        log.info("Cropping the OSM dataset with Osmosis. This might take a while...")
         subprocess.run(
             [
                 "osmosis",
@@ -83,6 +85,7 @@ class OSMFile:
 
     def load_osm_data(self) -> pyrosm.pyrosm.OSM:
         """Returns pyrosm OSM data object"""
+        log.info(f"Loading {self.name} into pyrosm...")
         return pyrosm.pyrosm.OSM(self.path)
 
 
