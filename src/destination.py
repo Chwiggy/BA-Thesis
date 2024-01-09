@@ -83,6 +83,12 @@ class DestinationEnum(Enum):
     OSM_SCHOOLS_MORNING = auto()
     OSM_SCHOOLS_NOON = auto()
 
+class TimeEnum(Enum):
+    MORNING = datetime.time(hour=12, minute= 0)
+    NOON = datetime.time(hour=12, minute= 0)
+    EVENING = datetime.time(hour=18, minute=0)
+    NIGHT = datetime.time (hour=0, minute=30)
+
 
 @dataclass
 class DestinationSet:
@@ -140,6 +146,9 @@ def local_destination_set(file: Path, mask: gpd.GeoDataFrame = None) -> Union [D
     return DestinationSet(
         name=name, destinations=gdf, departure_time=time
     )
+
+def destination_set_from_dataframe(data: gpd.GeoDataFrame,):
+    pass
 
     
 
