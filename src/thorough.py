@@ -46,9 +46,8 @@ def main(place_name: str, gtfs_path: str):
             continue
         destinations.append(destination)
 
-            
         # TODO process destination data
-        
+
         # TODO clean up processing in batch.py and insert
         centrality.closeness_centrality(
             transport_network=transport_network,
