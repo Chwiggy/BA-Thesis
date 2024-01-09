@@ -115,19 +115,33 @@ def osm_destination_set(
             custom_filter = {"amenity": ["school"]}
             reversed = True
 
-    centroids = extract_destinations(osm_data=osm_data, filter=custom_filter)
+    gdf = extract_destinations(osm_data=osm_data, filter=custom_filter)
 
     return DestinationSet(
-        name=name, destinations=centroids, departure_time=time, reversed=reversed
+        name=name, destinations=gdf, departure_time=time, reversed=reversed
     )
 
 
-def local_destination_set(file: Path) -> Union[gpd.GeoDataFrame, None]:
+def local_destination_set(file: Path, mask: gpd.GeoDataFrame = None) -> Union [DestinationSet, None]:
     if file.is_dir():
         return None
-    elif file.match("*.csv"):
-        df = pd.read_csv(filepath_or_buffer=file)
-        # TODO think about data to use
+    if not file.match("*.json"):
+        return None
+       
+    #processing GeoJSON as destination set
+    gdf = gpd.read_file(filename=file, mask=mask)
+    if gdf.empty() or gdf is None:
+        return None
+    gdf['geometry'] = gdf.centroid
+    
+    name, _ = file.name.split(".")
+    time = datetime.time(hour=13, minute=0)
+
+    return DestinationSet(
+        name=name, destinations=gdf, departure_time=time
+    )
+
+    
 
 
 def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
