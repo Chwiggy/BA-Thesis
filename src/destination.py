@@ -78,16 +78,16 @@ def places_to_hexgrids(place: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return hexgrid
 
 
-# TODO rework this as a dict?
 class DestinationEnum(Enum):
     OSM_SCHOOLS_MORNING = auto()
     OSM_SCHOOLS_NOON = auto()
 
+
 class TimeEnum(Enum):
-    MORNING = datetime.time(hour=12, minute= 0)
-    NOON = datetime.time(hour=12, minute= 0)
+    MORNING = datetime.time(hour=12, minute=0)
+    NOON = datetime.time(hour=12, minute=0)
     EVENING = datetime.time(hour=18, minute=0)
-    NIGHT = datetime.time (hour=0, minute=30)
+    NIGHT = datetime.time(hour=0, minute=30)
 
 
 @dataclass
@@ -128,7 +128,9 @@ def osm_destination_set(
     )
 
 
-def local_destination_set(file: Path, mask: gpd.GeoDataFrame = None) -> Union [DestinationSet, None]:
+def local_destination_set(
+    file: Path, mask: gpd.GeoDataFrame = None
+) -> Union[DestinationSet, None]:
     """
     Takes local pre-processed poi geodatasets in geoJSON format and returns destination datasets
     """
@@ -136,32 +138,31 @@ def local_destination_set(file: Path, mask: gpd.GeoDataFrame = None) -> Union [D
         return None
     if not file.match("*.json"):
         return None
-       
-    #processing GeoJSON as destination set
+
+    # processing GeoJSON as destination set
     gdf = gpd.read_file(filename=file, mask=mask)
     if gdf.empty() or gdf is None:
         return None
-    gdf['geometry'] = gdf.centroid
-    
+    gdf["geometry"] = gdf.centroid
+
     name, _ = file.name.split(".")
     time = datetime.time(hour=13, minute=0)
 
-    return DestinationSet(
-        name=name, destinations=gdf, departure_time=time
-    )
+    return DestinationSet(name=name, destinations=gdf, departure_time=time)
+
 
 def destination_sets_from_dataframe(data: gpd.GeoDataFrame) -> list(DestinationSet):
     destinations = []
     for time in TimeEnum:
         destination = DestinationSet(
-            name = "self" + time.name,
+            name="self" + time.name,
             destinations=centroids(hexgrid=data),
-            departure_time=time.value
+            departure_time=time.value,
         )
         destinations.append(destination)
     return destinations
 
-    
+
 def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
     destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
     destinations_centroids = destinations.copy()

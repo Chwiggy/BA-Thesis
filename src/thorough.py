@@ -34,7 +34,7 @@ def main(place_name: str, gtfs_path: str):
         osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
     )
 
-    #Processing all available destination data
+    # Processing all available destination data
     destinations = []
     for entry in dst.DestinationEnum:
         destination = dst.osm_destination_set(
@@ -54,7 +54,7 @@ def main(place_name: str, gtfs_path: str):
         centrality.closeness_new(
             transport_network=transport_network,
             hexgrid=dst.centroids(hexgrid),
-            destination=destination
+            destination=destination,
         )
 
     # TODO Handle output
