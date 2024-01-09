@@ -41,4 +41,5 @@ def closeness_new(
     destination=dst.DestinationSet,
 ) -> gpd.GeoDataFrame:
     # TODO add processing from above
+    # TODO Results
     pass

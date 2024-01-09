@@ -50,8 +50,7 @@ def main(place_name: str, gtfs_path: str):
     destinations.extend(dst.destination_sets_from_dataframe(data=hexgrid))
 
     for destination in destinations:
-        # TODO clean up processing in batch.py and insert
-        centrality.closeness_new(
+        results = centrality.closeness_new(
             transport_network=transport_network,
             hexgrid=dst.centroids(hexgrid),
             destination=destination,
