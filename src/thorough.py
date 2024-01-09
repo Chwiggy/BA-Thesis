@@ -34,6 +34,7 @@ def main(place_name: str, gtfs_path: str):
         osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
     )
 
+    #Processing all available destination data
     destinations = []
     for entry in dst.DestinationEnum:
         destination = dst.osm_destination_set(
@@ -41,15 +42,16 @@ def main(place_name: str, gtfs_path: str):
         )
         destinations.append(destination)
     for file in Path("../data/destinations").iterdir():
-        destination = dst.local_destination_set(file)
+        destination = dst.local_destination_set(file, mask=buffered_place)
         if destination is None:
             continue
         destinations.append(destination)
+    # TODO Self Destinations
 
-        # TODO process destination data
+    # TODO loop through destinations and 
 
         # TODO clean up processing in batch.py and insert
-        centrality.closeness_centrality(
+        centrality.closeness_new(
             transport_network=transport_network,
             hexgrid=dst.centroids(hexgrid),
             destinations=None,  # TODO process destinations,
