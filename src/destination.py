@@ -129,6 +129,9 @@ def osm_destination_set(
 
 
 def local_destination_set(file: Path, mask: gpd.GeoDataFrame = None) -> Union [DestinationSet, None]:
+    """
+    Takes local pre-processed poi geodatasets in geoJSON format and returns destination datasets
+    """
     if file.is_dir():
         return None
     if not file.match("*.json"):
@@ -147,12 +150,18 @@ def local_destination_set(file: Path, mask: gpd.GeoDataFrame = None) -> Union [D
         name=name, destinations=gdf, departure_time=time
     )
 
-def destination_set_from_dataframe(data: gpd.GeoDataFrame,):
-    pass
+def destination_sets_from_dataframe(data: gpd.GeoDataFrame) -> list(DestinationSet):
+    destinations = []
+    for time in TimeEnum:
+        destination = DestinationSet(
+            name = "self" + time.name,
+            destinations=centroids(hexgrid=data),
+            departure_time=time.value
+        )
+        destinations.append(destination)
+    return destinations
 
     
-
-
 def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
     destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
     destinations_centroids = destinations.copy()

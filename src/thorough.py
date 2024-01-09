@@ -46,17 +46,18 @@ def main(place_name: str, gtfs_path: str):
         if destination is None:
             continue
         destinations.append(destination)
-    # TODO Self Destinations
+    # Adding Self Destinations
+    destinations.extend(dst.destination_sets_from_dataframe(data=hexgrid))
 
-    # TODO loop through destinations and 
-
+    for destination in destinations:
         # TODO clean up processing in batch.py and insert
         centrality.closeness_new(
             transport_network=transport_network,
             hexgrid=dst.centroids(hexgrid),
-            destinations=None,  # TODO process destinations,
-            departure=None,  # TODO Departure time processing,
+            destination=destination
         )
+
+    # TODO Handle output
 
 
 def cli_input():
