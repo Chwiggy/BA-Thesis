@@ -30,6 +30,7 @@ class OSMFile:
     ) -> None:
         self.extent = extent
         self.name = name
+        self.loaded = False
 
         if path is not None:
             self.path = path
@@ -74,6 +75,7 @@ class OSMFile:
                 f"file={save_path}",
             ]
         )
+        log.info(f'cropped osm data set {name} saved at {save_path}')
 
         if not inplace:
             cropped_set = OSMFile(extent=stops_extent, path=save_path, name=name)
@@ -85,10 +87,13 @@ class OSMFile:
 
     def load_osm_data(self) -> pyrosm.pyrosm.OSM:
         """Returns pyrosm OSM data object"""
+        if self.loaded:
+            return self.osm_data
+        
         log.info(f"Loading {self.name} into pyrosm...")
-        osm_data = pyrosm.pyrosm.OSM(self.path)
+        self.osm_data = pyrosm.pyrosm.OSM(self.path)
         log.info(f'... finished loading {self.name} into pyrosm')
-        return osm_data
+        return self.osm_data
 
 
 class OSMIndex:
@@ -101,6 +106,7 @@ class OSMIndex:
 
     def load_osm_fileindex(self) -> None:
         """Loads osm index into memory as a geopandas.GeoDataFrame"""
+        log.info('Loading OSM file index.')
         if self.path is None:
             self.gdf = gpd.GeoDataFrame(
                 columns=["name", "path", "geometry"],
@@ -155,6 +161,9 @@ class OSMIndex:
         param: gdf: geopandas.GeoDataFrame to cover
         return: matching_file: OSMFile that matches criteria or None if none found
         """
+        if not self.loaded:
+            self.load_osm_fileindex
+        
         if self.gdf.empty:
             return None
 

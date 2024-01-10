@@ -25,11 +25,11 @@ def main(place_name: str, gtfs_path: str):
         transit_feed.crop_gtfs(buffered_place, inplace=True)
     except NotImplementedError:
         pass
-
+    
     matching_osm_file = osm.get_osm_data(geodata=buffered_place, name=place_name)
 
     hexgrid = dst.places_to_hexgrids(place)
-
+    
     transport_network = r5py.TransportNetwork(
         osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
     )
@@ -66,7 +66,7 @@ def cli_input():
     parser.add_argument("place")
     parser.add_argument("-g", "--gtfs")
     args = parser.parse_args()
-    place_name = args.county
+    place_name = args.place
     gtfs_path = args.gtfs
 
     return place_name, gtfs_path
