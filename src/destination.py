@@ -151,7 +151,7 @@ def local_destination_set(
     return DestinationSet(name=name, destinations=gdf, departure_time=time)
 
 
-def destination_sets_from_dataframe(data: gpd.GeoDataFrame) -> list(DestinationSet):
+def destination_sets_from_dataframe(data: gpd.GeoDataFrame) -> list[DestinationSet]:
     destinations = []
     for time in TimeEnum:
         destination = DestinationSet(
