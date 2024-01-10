@@ -141,7 +141,7 @@ def local_destination_set(
 
     # processing GeoJSON as destination set
     gdf = gpd.read_file(filename=file, mask=mask)
-    if gdf.empty() or gdf is None:
+    if gdf.empty:
         return None
     gdf["geometry"] = gdf.centroid
 
@@ -164,8 +164,12 @@ def destination_sets_from_dataframe(data: gpd.GeoDataFrame) -> list[DestinationS
 
 
 def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
+    # TODO extracting osm destinations seems to just quietly fail if the data set is too large
+    log.debug(f"Attempting to extract osm data with pyrosm for {filter}")
     destinations = osm_data.get_data_by_custom_criteria(custom_filter=filter)
+    log.info("extracted destinations from osm data")
     destinations_centroids = destinations.copy()
+    log.debug("creating centroids")
     destinations_centroids["geometry"] = destinations.centroid
     return destinations_centroids
 

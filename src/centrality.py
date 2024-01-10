@@ -63,9 +63,10 @@ def closeness_new(
         travel_time_pivot = travel_times.pivot(
             index="from_id", columns="to_id", values="travel_time"
         )
-    travel_time_pivot["mean"] = travel_time_pivot.mean(axis=1)
-    travel_time_pivot = travel_time_pivot[["mean"]]
+    travel_time_pivot[f"mean_{destination.name}"] = travel_time_pivot.mean(axis=1)
+    travel_time_pivot = travel_time_pivot[[f"mean_{destination.name}"]]
 
+    # TODO maybe do the joining outside this scope so the for loop can add all results to the data frame
     results = hexgrid.join(other=travel_time_pivot, on="id")
     return results
 

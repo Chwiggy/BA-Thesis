@@ -13,7 +13,7 @@ from pathlib import Path
 
 def main(place_name: str, gtfs_path: str):
     log.basicConfig(
-        format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.INFO
+        format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.DEBUG
     )
 
     place = dst.geocoding(place_name)
@@ -25,24 +25,27 @@ def main(place_name: str, gtfs_path: str):
         transit_feed.crop_gtfs(buffered_place, inplace=True)
     except NotImplementedError:
         pass
-    
+
     matching_osm_file = osm.get_osm_data(geodata=buffered_place, name=place_name)
+    # TODO crop osm data to buffered place anyhow?
 
     hexgrid = dst.places_to_hexgrids(place)
-    
+
     transport_network = r5py.TransportNetwork(
         osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
     )
 
     # Processing all available destination data
     destinations = []
-    for entry in dst.DestinationEnum:
-        destination = dst.osm_destination_set(
-            osm_file=matching_osm_file, desired_destination=entry
-        )
-        destinations.append(destination)
-    for file in Path("../data/destinations").iterdir():
-        destination = dst.local_destination_set(file, mask=buffered_place)
+    # TODO osm data extraction with pyrosm seems to be annoying -> alternatives?
+    # for entry in dst.DestinationEnum:
+    #    destination = dst.osm_destination_set(
+    #        osm_file=matching_osm_file, desired_destination=entry
+    #    )
+    #    destinations.append(destination)
+    data_dir = Path("/home/emily/thesis_BA/data/destinations")
+    for child in data_dir.iterdir():
+        destination = dst.local_destination_set(file=child, mask=buffered_place)
         if destination is None:
             continue
         destinations.append(destination)
@@ -51,7 +54,7 @@ def main(place_name: str, gtfs_path: str):
 
     for destination in destinations:
         results = centrality.closeness_new(
-            transport_network=transport_network,
+            transit=transport_network,
             hexgrid=dst.centroids(hexgrid),
             destination=destination,
         )
