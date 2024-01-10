@@ -86,7 +86,9 @@ class OSMFile:
     def load_osm_data(self) -> pyrosm.pyrosm.OSM:
         """Returns pyrosm OSM data object"""
         log.info(f"Loading {self.name} into pyrosm...")
-        return pyrosm.pyrosm.OSM(self.path)
+        osm_data = pyrosm.pyrosm.OSM(self.path)
+        log.info(f'... finished loading {self.name} into pyrosm')
+        return osm_data
 
 
 class OSMIndex:
