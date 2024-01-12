@@ -65,14 +65,8 @@ def closeness_new(
         )
     travel_time_pivot[f"mean_{destination.name}"] = travel_time_pivot.mean(axis=1)
     travel_time_pivot = travel_time_pivot[[f"mean_{destination.name}"]]
-
-    # TODO maybe do the joining outside this scope so the for loop can add all results to the data frame
-    results = hexgrid.join(other=travel_time_pivot, on="id")
-    return results
-
-    # TODO Results
-    pass
-
+    return travel_time_pivot
+    
 
 def departure_time(
     transit: r5py.TransportNetwork, destination: dst.DestinationSet

@@ -30,6 +30,7 @@ def main(place_name: str, gtfs_path: str):
     # TODO crop osm data to buffered place anyhow?
 
     hexgrid = dst.places_to_hexgrids(place)
+    # TODO exclude non populated areas
 
     transport_network = r5py.TransportNetwork(
         osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
@@ -52,14 +53,19 @@ def main(place_name: str, gtfs_path: str):
     # Adding Self Destinations
     destinations.extend(dst.destination_sets_from_dataframe(data=hexgrid))
 
+    # Computing and matching up results
+    results = hexgrid.copy()
     for destination in destinations:
-        results = centrality.closeness_new(
+        result = centrality.closeness_new(
             transit=transport_network,
             hexgrid=dst.centroids(hexgrid),
-            destination=destination,
+            destination=destination
         )
+        results.join(other=result, on="id", inplace=True)
+        # TODO see if this actually works
+    results.to_file(path=f"{place_name}.json") #TODO add actual file path for results...
 
-    # TODO Handle output
+    # TODO analyse results
 
 
 def cli_input():
