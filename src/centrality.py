@@ -51,7 +51,9 @@ def closeness_new(
         departure_time_window=datetime.timedelta(minutes=60),
         transport_modes=[r5py.TransportMode.WALK, r5py.TransportMode.TRANSIT],
     )
-    log.info(msg=f"Computing Travel Time Matrix for {destination.name}. This might take a while ...")
+    log.info(
+        msg=f"Computing Travel Time Matrix for {destination.name}. This might take a while ..."
+    )
     travel_times = travel_time_matrix_computer.compute_travel_times()
     log.info(msg="Finished calculating travel times")
 
@@ -66,7 +68,7 @@ def closeness_new(
     travel_time_pivot[f"mean_{destination.name}"] = travel_time_pivot.mean(axis=1)
     travel_time_pivot = travel_time_pivot[[f"mean_{destination.name}"]]
     return travel_time_pivot
-    
+
 
 def departure_time(
     transit: r5py.TransportNetwork, destination: dst.DestinationSet
