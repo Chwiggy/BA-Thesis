@@ -168,11 +168,12 @@ class OSMIndex:
             return None
 
         matching_rows = self.gdf.contains(gdf.unary_union)
-        if len(matching_rows) == 0:
-            return None
-        # TODO output type
 
         coverage = self.gdf[matching_rows]["geometry"].area
+        if coverage.empty:
+            # TODO output type
+            return None
+        
         smallest = coverage.idxmin()
 
         matching_file = OSMFile(
@@ -204,6 +205,7 @@ def find_online_data(gdf: gpd.GeoDataFrame):
 
 
 def download_osm_data(id: str, extent):
+    # TODO Error Handling for pyrosm: ValueError("couldnt find url for xyz")
     osm_path = pyrosm.get_data(dataset=id, directory="src/data/osm_data")
     return_data = OSMFile(path=osm_path, extent=extent, name=id)
 

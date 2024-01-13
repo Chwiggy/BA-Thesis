@@ -66,7 +66,7 @@ def main(place_name: str, gtfs_path: str):
             destination=destination,
         )
         results = results.join(other=result, on="id")
-        # TODO see if this actually works
+        # TODO why does this randomly fail here sometimes
     results.to_file(
         filename=f"{place_name}.json"
     ) 
