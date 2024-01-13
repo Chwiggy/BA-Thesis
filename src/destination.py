@@ -39,6 +39,18 @@ def geocoding(place_name: Union[str, list]) -> gpd.GeoDataFrame:
             else:
                 continue
 
+def buffer(data: gpd.GeoDataFrame, buffer: int) -> gpd.GeoDataFrame:
+    """
+    Return a buffer from an EPSG:4326 GeoDataFrame.
+    param: data: GeoDataFrame in EPSG:4326
+    param: buffer: distance for the buffer in meters
+    return: utm_place: data frame with buffer applied
+    """
+    utm_place = data.to_crs(crs=data.estimate_utm_crs(), inplace=False)
+    utm_place["geometry"] = utm_place.buffer(distance=buffer)
+    utm_place.to_crs(crs="EPSG:4326", inplace=True)
+
+    return utm_place
 
 def extract_counties(osm_data: pyrosm.pyrosm.OSM) -> gpd.GeoDataFrame:
     """
@@ -219,3 +231,6 @@ def clip_destinations(destinations, hexgrid):
     clipping_buffer = boundary.buffer(distance=0.05)
     clipped_destinations = destinations.clip(clipping_buffer)
     return clipped_destinations
+
+
+

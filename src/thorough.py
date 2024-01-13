@@ -16,9 +16,8 @@ def main(place_name: str, gtfs_path: str):
     # TODO config file
 
     place = dst.geocoding(place_name)
-    # TODO make buffer more sensible
-    buffered_place = place.copy()
-    buffered_place["geometry"] = place.buffer(distance=0.05)
+    buffer = 10000
+    buffered_place = dst.buffer(data = place, buffer = buffer)
 
     transit_feed = gtfs.GTFS(path=gtfs_path)
     # Check if gtfs file actually covers the extent of the place
@@ -70,7 +69,9 @@ def main(place_name: str, gtfs_path: str):
         # TODO see if this actually works
     results.to_file(
         filename=f"{place_name}.json"
-    )  # TODO add actual file path for results...
+    ) 
+
+    # TODO add actual file path for results...
 
     # TODO analyse results
 
