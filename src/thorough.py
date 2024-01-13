@@ -25,7 +25,11 @@ def main(place_name: str, gtfs_path: str):
     buffered_place["geometry"] = place.buffer(distance=0.05)
 
     transit_feed = gtfs.GTFS(path=gtfs_path)
-    # TODO check if gtfs file actually covers the extent of the place
+    # Check if gtfs file actually covers the extent of the place
+    if not transit_feed.covers_location:
+        log.warning(
+            f"specified gtfs feed at {transit_feed.path} doesn't have stop locations in specified area. Calculations for WALKING only."
+        )
     try:
         transit_feed.crop_gtfs(buffered_place, inplace=True)
     except NotImplementedError:
@@ -64,11 +68,13 @@ def main(place_name: str, gtfs_path: str):
         result = centrality.closeness_new(
             transit=transport_network,
             hexgrid=dst.centroids(hexgrid),
-            destination=destination
+            destination=destination,
         )
         results = results.join(other=result, on="id")
         # TODO see if this actually works
-    results.to_file(filename=f"{place_name}.json") #TODO add actual file path for results...
+    results.to_file(
+        filename=f"{place_name}.json"
+    )  # TODO add actual file path for results...
 
     # TODO analyse results
 

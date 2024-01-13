@@ -41,9 +41,22 @@ class GTFS:
 
         return stops_gdf
 
+    def covers_location(self, other: gpd.GeoDataFrame) -> bool:
+        """
+        Checks if there are stop locations within the unary union of the other dataframe.
+        Params: other: GeoDataFrame to check
+        returns: bool: true if there's stop locations within the area
+        """
+        stops = self.dataframe_from_stops()
+        local_stops = stops.clip(mask=other.unary_union)
+        if local_stops.is_empty():
+            return False
+        return True
+
 
 def departure_time(desired_destination, transport_network):
     # TODO how to make this work for more destinations and types
+    # TODO move this, refactor batch
     start_date = transport_network.transit_layer.start_date
     end_date = transport_network.transit_layer.end_date
     delta = (end_date - start_date) / 2
