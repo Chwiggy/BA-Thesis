@@ -26,7 +26,7 @@ def main(place_name: str, gtfs_path: str):
 
     transit_feed = gtfs.GTFS(path=gtfs_path)
     # Check if gtfs file actually covers the extent of the place
-    if not transit_feed.covers_location:
+    if not transit_feed.covers_location(other=place):
         log.warning(
             f"specified gtfs feed at {transit_feed.path} doesn't have stop locations in specified area. Calculations for WALKING only."
         )

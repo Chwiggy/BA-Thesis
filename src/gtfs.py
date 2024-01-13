@@ -10,12 +10,14 @@ from pathlib import Path
 class GTFS:
     def __init__(self, path: str) -> None:
         self.path = Path(path)
-        if self.path.is_dir:
+        if zipfile.is_zipfile(filename=self.path):
+            self.name = self.path.stem
+            self.archived = True
+        elif self.path.is_dir:
             self.name = self.path.name
             self.archived = False
-        elif self.path.is_file:
-            self.name, _ = self.path.name.split(sep=".")
-            self.archived = True
+        else:
+            raise NoGTFSFileError(message=f"Can't handle specified file at {self.path}")
 
     def crop_gtfs(self, place: gpd.GeoDataFrame, inplace: bool = False):
         raise NotImplementedError
@@ -49,9 +51,16 @@ class GTFS:
         """
         stops = self.dataframe_from_stops()
         local_stops = stops.clip(mask=other.unary_union)
-        if local_stops.is_empty():
+        if local_stops.empty:
             return False
         return True
+    
+class NoGTFSFileError(Exception):
+    """Error for not a valid gtfs file"""
+    def __init__(self, message: str = None, *args: object) -> None:
+        super().__init__(*args)
+        self.message = message
+
 
 
 def departure_time(desired_destination, transport_network):
