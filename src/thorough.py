@@ -12,11 +12,7 @@ from pathlib import Path
 
 
 def main(place_name: str, gtfs_path: str):
-    # TODO verbosity levels
-    log.basicConfig(
-        format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.DEBUG
-    )
-
+    log.debug(msg="testing")
     # TODO config file
 
     place = dst.geocoding(place_name)
@@ -85,9 +81,20 @@ def cli_input():
     )
     parser.add_argument("place")
     parser.add_argument("-g", "--gtfs")
+    parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
     place_name = args.place
     gtfs_path = args.gtfs
+    verbosity = args.verbose
+    if verbosity:
+        log.basicConfig(
+            format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.DEBUG
+        )
+    else:
+        log.basicConfig(
+            format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.INFO
+        )
+
 
     return place_name, gtfs_path
 
