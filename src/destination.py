@@ -84,7 +84,8 @@ def places_to_hexgrids(place: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     ## Return
     hexgrid: gpd.GeoDataFrame with hexgrids
     """
-    hexgrid = place.h3.polyfill_resample(10)
+    # TODO resolution = 9 might be a bit coarse for results but brings enormous savings
+    hexgrid = place.h3.polyfill_resample(9)
     hexgrid.reset_index(inplace=True)
     hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
     return hexgrid

@@ -16,7 +16,7 @@ def main(place_name: str, gtfs_path: str):
     # TODO config file
 
     place = dst.geocoding(place_name)
-    buffer = 10000
+    buffer = 1000
     buffered_place = dst.buffer(data = place, buffer = buffer)
 
     transit_feed = gtfs.GTFS(path=gtfs_path)

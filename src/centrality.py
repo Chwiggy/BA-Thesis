@@ -16,12 +16,13 @@ def closeness_centrality(
     # TODO deprecate in batch.py
     log.warn(msg="This function is deprecated")
 
+    # TODO departure time window is narrow but for testing this might help reduce load 
     travel_time_matrix_computer = r5py.TravelTimeMatrixComputer(
         transport_network,
         origins=hexgrid,
         destinations=destinations,
         departure=departure,
-        departure_time_window=datetime.timedelta(minutes=60),
+        departure_time_window=datetime.timedelta(minutes=20),
         transport_modes=[r5py.TransportMode.WALK, r5py.TransportMode.TRANSIT],
     )
 
