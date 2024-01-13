@@ -12,15 +12,20 @@ from pathlib import Path
 
 
 def main(place_name: str, gtfs_path: str):
+    # TODO verbosity levels
     log.basicConfig(
         format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.DEBUG
     )
 
+    # TODO config file
+
     place = dst.geocoding(place_name)
+    # TODO make buffer more sensible
     buffered_place = place.copy()
     buffered_place["geometry"] = place.buffer(distance=0.05)
 
     transit_feed = gtfs.GTFS(path=gtfs_path)
+    # TODO check if gtfs file actually covers the extent of the place
     try:
         transit_feed.crop_gtfs(buffered_place, inplace=True)
     except NotImplementedError:
@@ -61,9 +66,9 @@ def main(place_name: str, gtfs_path: str):
             hexgrid=dst.centroids(hexgrid),
             destination=destination
         )
-        results.join(other=result, on="id", inplace=True)
+        results = results.join(other=result, on="id")
         # TODO see if this actually works
-    results.to_file(path=f"{place_name}.json") #TODO add actual file path for results...
+    results.to_file(filename=f"{place_name}.json") #TODO add actual file path for results...
 
     # TODO analyse results
 
