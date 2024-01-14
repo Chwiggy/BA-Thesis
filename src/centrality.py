@@ -80,11 +80,12 @@ def reachable_destinations(pivot_table:gpd.GeoDataFrame, limit: int) -> pd.Serie
     """
     reach_limit = pivot_table.copy()
     # TODO figure out if pd.DataFrame.map can handle a set limit
-    reach_limit_bool = reach_limit.map(func=lambda x: within_limit(value=x, limit=limit), na_action='ignore')
+    reach_limit_bool = reach_limit.map(func=lambda x: __within_limit(value=x, limit=limit), na_action='ignore')
     reach_limit_sum = reach_limit_bool.sum(axis=1, skipna=True, numeric_only=True)
     return reach_limit_sum
 
-def within_limit(value, limit: int) -> bool:
+def __within_limit(value, limit: int) -> bool:
+    """Simple callable for reachable_destination pandas.DataFrame.map call"""
     if type(value) is not float:
         return False
     elif value > limit:
