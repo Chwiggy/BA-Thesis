@@ -66,11 +66,14 @@ def closeness_new(
         travel_time_pivot = travel_times.pivot(
             index="from_id", columns="to_id", values="travel_time"
         )
-    travel_time_pivot[f"mean_{destination.name}"] = travel_time_pivot.mean(axis=1)
+    
+    result = travel_time_pivot.copy()
+    result[f"mean_{destination.name}"] = travel_time_pivot.mean(axis=1)
     # TODO pass up limit for config
-    travel_time_pivot[f"reach_{destination.name}"] = reachable_destinations(pivot_table=travel_time_pivot, limit=45)
-    travel_time_pivot = travel_time_pivot[[f"mean_{destination.name}", f"reach_{destination.name}"]]
-    return travel_time_pivot
+    result[f"reach_{destination.name}"] = reachable_destinations(pivot_table=travel_time_pivot, limit=45)
+    result[f"reach_{destination.name}"] = result[f"reach_{destination.name}"].astype(int)
+    result = result[[f"mean_{destination.name}", f"reach_{destination.name}"]]
+    return result
 
 def reachable_destinations(pivot_table:gpd.GeoDataFrame, limit: int) -> pd.Series:
     """
@@ -78,10 +81,8 @@ def reachable_destinations(pivot_table:gpd.GeoDataFrame, limit: int) -> pd.Serie
     param: pivot_table: pivoted gpd.GeoDataFrame from r5py.TravelTimeMatrixComputor
     returns: pandas series with number of reachable destinations.
     """
-    reach_limit = pivot_table.copy()
-    # TODO figure out if pd.DataFrame.map can handle a set limit
-    reach_limit_bool = reach_limit.map(func=lambda x: __within_limit(value=x, limit=limit), na_action='ignore')
-    reach_limit_sum = reach_limit_bool.sum(axis=1, skipna=True, numeric_only=True)
+    bool_limit_table = pivot_table.map(func=lambda x: __within_limit(value=x, limit=limit), na_action='ignore')
+    reach_limit_sum = bool_limit_table.sum(axis=1, skipna=True)
     return reach_limit_sum
 
 def __within_limit(value, limit: int) -> bool:
