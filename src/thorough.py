@@ -6,7 +6,7 @@ import pandas as pd
 import h3pandas
 import destination as dst
 import gtfs
-import osmfile as osm
+import osmfile as osmco
 import centrality
 from pathlib import Path
 
@@ -33,7 +33,7 @@ def main(place_name: str, gtfs_path: str):
     matching_osm_file = osm.get_osm_data(geodata=buffered_place, name=place_name)
     # TODO crop osm data to buffered place anyhow?
 
-    hexgrid = dst.places_to_hexgrids(place)
+    hexgrid = dst.places_to_pop_hexgrids(place=place, pop_data='/home/emily/thesis_BA/src/data/population/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0_R4_C19.tif')
     # TODO exclude non populated areas
 
     transport_network = r5py.TransportNetwork(
