@@ -6,7 +6,7 @@ import pandas as pd
 import h3pandas
 import destination as dst
 import gtfs
-import osmfile as osmco
+import osmfile as osm
 import centrality
 from pathlib import Path
 
