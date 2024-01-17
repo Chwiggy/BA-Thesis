@@ -1,0 +1,8 @@
+name: thesis-new
+channels:
+  - defaults
+dependencies:
+  - r5py
+  - pyrosm
+  - h3pandas
+  - osmnx
