@@ -4,3 +4,14 @@ It is part of a larger thesis project with a not-yet-started write-up [here](htt
 
 ## Installation
 *yet to be determined*
+
+## Questions
+Can closeness centrality map on to car and public transport differences
+
+
+## TODOs
+[] population data and lorenz curves
+[] compare to car but with added door to door delays for cars
+[] compare methods for schools closeness centrality and isochrone
+[] open questions!c
+[] compare cities with different layouts
