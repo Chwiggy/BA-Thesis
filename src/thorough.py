@@ -8,6 +8,7 @@ import destination as dst
 import gtfs
 import osmfile as osm
 import centrality
+import centrality
 from pathlib import Path
 
 
