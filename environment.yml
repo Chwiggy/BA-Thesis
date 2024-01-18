@@ -1,0 +1,9 @@
+name: thesis-new
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - r5py
+  - pyrosm
+  - h3pandas
+  - osmnx
