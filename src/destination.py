@@ -110,6 +110,7 @@ class DestinationEnum(Enum):
     OSM_SCHOOLS_NOON = auto()
 
 
+# TODO add times throughout the day
 class TimeEnum(Enum):
     MORNING = datetime.time(hour=12, minute=0)
     NOON = datetime.time(hour=12, minute=0)
