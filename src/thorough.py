@@ -11,6 +11,7 @@ import centrality
 import centrality
 from pathlib import Path
 
+# TODO adapt this for temparal analysis, or make yet anouther script...
 
 def main(place_name: str, gtfs_path: str):
     log.debug(msg="testing")
