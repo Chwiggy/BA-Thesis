@@ -9,7 +9,8 @@ import gtfs
 import osmfile as osm
 import centrality
 import centrality
-from pathlib import Path
+import datetime
+from enum import Enum
 
 # TODO adapt this for temporal analysis, or make yet anouther script...
 
@@ -41,23 +42,19 @@ def main(place_name: str, gtfs_path: str):
     transport_network = r5py.TransportNetwork(
         osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
     )
+    
+    #creating enum with every time of day
+    time = datetime.time(hour=0)
+    hour_step = 0
+    times_of_day = []
+    while hour_step < 24:
+        time = time.replace(hour=hour_step)
+        times_of_day.append((str(time),time))
+        hour_step += 1
+    times = Enum("Times", times_of_day)
 
-    # Processing all available destination data
-    destinations = []
-    # TODO osm data extraction with pyrosm seems to be annoying -> alternatives?
-    # for entry in dst.DestinationEnum:
-    #    destination = dst.osm_destination_set(
-    #        osm_file=matching_osm_file, desired_destination=entry
-    #    )
-    #    destinations.append(destination)
-    data_dir = Path("/home/emily/thesis_BA/data/destinations")
-    for child in data_dir.iterdir():
-        destination = dst.local_destination_set(file=child, mask=buffered_place)
-        if destination is None:
-            continue
-        destinations.append(destination)
-    # Adding Self Destinations
-    destinations.extend(dst.destination_sets_from_dataframe(data=hexgrid, time=dst.TimeEnum))
+    # Processing destination data for every time of day
+    destinations = dst.destination_sets_from_dataframe(data=hexgrid, times=times)
 
     # Computing and matching up results
     results = hexgrid.copy()

@@ -179,9 +179,9 @@ def local_destination_set(
     return DestinationSet(name=name, destinations=gdf, departure_time=time)
 
 
-def destination_sets_from_dataframe(data: gpd.GeoDataFrame) -> list[DestinationSet]:
+def destination_sets_from_dataframe(data: gpd.GeoDataFrame, times: Enum) -> list[DestinationSet]:
     destinations = []
-    for time in TimeEnum:
+    for time in times:
         destination = DestinationSet(
             name="self" + time.name,
             destinations=centroids(hexgrid=data),
@@ -189,6 +189,7 @@ def destination_sets_from_dataframe(data: gpd.GeoDataFrame) -> list[DestinationS
         )
         destinations.append(destination)
     return destinations
+
 
 
 def extract_destinations(osm_data: pyrosm.pyrosm.OSM, filter: dict) -> gpd.GeoDataFrame:
