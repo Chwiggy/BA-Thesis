@@ -57,7 +57,7 @@ def main(place_name: str, gtfs_path: str):
             continue
         destinations.append(destination)
     # Adding Self Destinations
-    destinations.extend(dst.destination_sets_from_dataframe(data=hexgrid, time=dst.TimeEnum))
+    destinations.extend(dst.destination_sets_from_dataframe(data=hexgrid, times=dst.TimeEnum))
 
     # Computing and matching up results
     results = hexgrid.copy()
