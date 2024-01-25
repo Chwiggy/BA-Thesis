@@ -49,7 +49,7 @@ def main(place_name: str, gtfs_path: str):
     times_of_day = []
     while hour_step < 24:
         time = time.replace(hour=hour_step)
-        times_of_day.append((str(time),time))
+        times_of_day.append((str(time.hour),time))
         hour_step += 1
     times = Enum("Times", times_of_day)
 
@@ -67,7 +67,7 @@ def main(place_name: str, gtfs_path: str):
         results = results.join(other=result, on="id")
         # TODO why does this randomly fail here sometimes
     results.to_file(
-        filename=f"{place_name}.json"
+        filename=f"{place_name}_temp.json"
     ) 
 
     # TODO add actual file path for results...
