@@ -11,9 +11,17 @@ Can closeness centrality map on to car and public transport differences
 
 ## TODOs
 [x] population data and lorenz curves
-[] temporal analysis: many departure times a day, compare results
+[x] temporal analysis: many departure times a day, compare results: use case ebay classifieds and friends
+[] think about equalizing of closeness centrality
+[] compare different profiles
+[] pick different representative cells with detailed analysis
+    [] from one cell to any cell over time
+    [] detailed routing for outlier connections
+[] group by neighbourhoods
+[] compare different cities
+[] difference between 10th and 90th percentile as a measure of "turning up and wait"-abilty vs a need to plan
 [] temporal analysis: percentiles as planned vs. unplanned departure penalties
 [] compare to car but with added door to door delays for cars
 [] compare methods for schools closeness centrality and isochrone
-[] open questions!c
+[] open questions!
 [] compare cities with different layouts
