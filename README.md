@@ -6,14 +6,15 @@ It is part of a larger thesis project with a not-yet-started write-up [here](htt
 *yet to be determined*
 
 ## Questions
-Can closeness centrality map on to car and public transport differences
+~~Can closeness centrality map on to car and public transport differences~~
+Can closeness centrality work as an indicator for temporal public transport variabilty within cities? Why?
 
 
 ## TODOs
 [x] population data and lorenz curves
 [x] temporal analysis: many departure times a day, compare results: use case ebay classifieds and friends
 [] think about equalizing of closeness centrality
-[] compare different profiles
+[] compare different profiles: use classification?
 [] pick different representative cells with detailed analysis
     [] from one cell to any cell over time
     [] detailed routing for outlier connections
