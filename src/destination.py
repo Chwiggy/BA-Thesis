@@ -102,7 +102,7 @@ def places_to_pop_hexgrids(place: gpd.GeoDataFrame, pop_data: str) -> gpd.GeoDat
     hexgrid['population'] = hexgrid_with_areas['h3_cell_area'] * hexgrid_with_areas['pop_density']
     hexgrid.reset_index(inplace=True)
     hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
-    hexgrid.clip(mask=place, keep_geom_type=True)
+    hexgrid = hexgrid.clip(mask=place, keep_geom_type=True)
     return hexgrid
     
 

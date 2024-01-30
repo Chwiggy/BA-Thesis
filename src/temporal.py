@@ -19,7 +19,7 @@ def main(place_name: str, gtfs_path: str):
     # TODO config file
 
     place = dst.geocoding(place_name)
-    buffer = 10000
+    buffer = 1000
     buffered_place = dst.buffer(data = place, buffer = buffer)
 
     transit_feed = gtfs.GTFS(path=gtfs_path)
@@ -36,7 +36,7 @@ def main(place_name: str, gtfs_path: str):
     matching_osm_file = osm.get_osm_data(geodata=buffered_place, name=place_name)
     # TODO crop osm data to buffered place anyhow?
 
-    hexgrid = dst.places_to_pop_hexgrids(place=place, pop_data='/home/emily/thesis_BA/src/data/population/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0_R4_C19.tif')
+    hexgrid = dst.places_to_pop_hexgrids(place=buffered_place, pop_data='/home/emily/thesis_BA/src/data/population/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0_R4_C19.tif')
     # TODO exclude non populated areas
 
     transport_network = r5py.TransportNetwork(
@@ -66,11 +66,11 @@ def main(place_name: str, gtfs_path: str):
         )
         results = results.join(other=result, on="id")
         # TODO why does this randomly fail here sometimes
+    
     results.to_file(
         filename=f"results/{place_name}_temp.json"
     ) 
-
-    # TODO add actual file path for results...
+    log.info(msg='saved results to GeoJSON')
 
     # TODO analyse results
 
