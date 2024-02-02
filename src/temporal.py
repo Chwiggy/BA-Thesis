@@ -39,9 +39,11 @@ def main(place_name: str, gtfs_path: str):
     hexgrid = dst.places_to_pop_hexgrids(place=buffered_place, pop_data='/home/emily/thesis_BA/src/data/population/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0_R4_C19.tif')
     # TODO exclude non populated areas
 
+    log.info(f"creating transport network for {place_name}")
     transport_network = r5py.TransportNetwork(
         osm_pbf=matching_osm_file.path, gtfs=transit_feed.path
     )
+    log.info(f"created transport network for {place_name}")
     
     #creating enum with every time of day
     time = datetime.time(hour=0)
@@ -57,7 +59,7 @@ def main(place_name: str, gtfs_path: str):
     destinations = dst.destination_sets_from_dataframe(data=hexgrid, times=times)
 
     # Computing and matching up results
-    results = hexgrid.copy()
+    results = hexgrid
     for destination in destinations:
         result = centrality.closeness_new(
             transit=transport_network,
