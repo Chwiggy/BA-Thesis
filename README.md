@@ -11,22 +11,22 @@ Can closeness centrality work as an indicator for temporal public transport vari
 
 
 ## TODOs
-[x] population data and lorenz curves
-[x] temporal analysis: many departure times a day, compare results: use case ebay classifieds and friends
-[x] think about equalizing of closeness centrality
-[] manual clustering by amplitude of differences
-[] final run on server
-    [] optimise script for server usage
-    [] run analysis for heidelberg + surrounding area on server
-[] compare different profiles: use classification?
-[] pick different representative cells with detailed analysis
-    [] from one cell to any cell over time
-    [] detailed routing for outlier connections
-[] group by neighbourhoods
-[] compare different cities
-[] difference between 10th and 90th percentile as a measure of "turning up and wait"-abilty vs a need to plan
-[] temporal analysis: percentiles as planned vs. unplanned departure penalties
-[] compare to car but with added door to door delays for cars
-[] compare methods for schools closeness centrality and isochrone
-[] open questions!
-[] compare cities with different layouts
+- [x] population data and lorenz curves
+- [x] temporal analysis: many departure times a day, compare results: use case ebay classifieds and friends
+- [x] think about equalizing of closeness centrality
+- [ ] manual clustering by amplitude of differences
+- [ ] final run on server
+    - [ ] optimise script for server usage
+    - [ ] difference between 10th and 90th percentile as a measure of "turning up and wait"-abilty vs a need to plan
+    - [ ] run analysis for heidelberg + surrounding area on server
+- [ ] compare different profiles: use classification?
+- [ ] pick different representative cells with detailed analysis
+    - [ ] from one cell to any cell over time
+    - [ ] detailed routing for outlier connections
+- [ ] group by neighbourhoods
+### Optionals
+- [ ] compare different cities
+- [ ] compare to car but with added door to door delays for cars
+- [ ] compare methods for schools closeness centrality and isochrone
+- [ ] open questions!
+- [ ] compare cities with different layouts
