@@ -7,9 +7,9 @@ import pyrosm
 import datetime
 from enum import Enum, auto
 from typing import Union
-import gtfs
-import osmfile as osm
-import raster
+import utils.gtfs as gtfs
+import utils.osmfile as osm
+import utils.raster as raster
 from dataclasses import dataclass
 from pathlib import Path
 from shapely.geometry import mapping

@@ -3,7 +3,7 @@ import logging as log
 import pandas as pd
 import geopandas as gpd
 import r5py
-import destination as dst
+import utils.destination as dst
 
 
 def closeness_new(

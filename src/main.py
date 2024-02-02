@@ -4,11 +4,11 @@ import r5py
 import geopandas as gpd
 import pandas as pd
 import h3pandas
-import destination as dst
-import gtfs
-import osmfile as osm
-import centrality
-import centrality
+import utils.destination as dst
+import utils.gtfs as gtfs
+import utils.osmfile as osm
+import utils.centrality as centrality
+import utils.centrality as centrality
 import datetime
 from enum import Enum
 
