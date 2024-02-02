@@ -13,7 +13,11 @@ Can closeness centrality work as an indicator for temporal public transport vari
 ## TODOs
 [x] population data and lorenz curves
 [x] temporal analysis: many departure times a day, compare results: use case ebay classifieds and friends
-[] think about equalizing of closeness centrality
+[x] think about equalizing of closeness centrality
+[] manual clustering by amplitude of differences
+[] final run on server
+    [] optimise script for server usage
+    [] run analysis for heidelberg + surrounding area on server
 [] compare different profiles: use classification?
 [] pick different representative cells with detailed analysis
     [] from one cell to any cell over time
