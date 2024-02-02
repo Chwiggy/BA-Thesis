@@ -1,9 +1,20 @@
-# *insert project name*
+# Multi-Temporal Reach
 This project is an attempt at creating a tool to detect gaps in public transit coverage from both a network analysis perspective as well as an intersectional perspective.
 It is part of a larger thesis project with a not-yet-started write-up [here](https://github.com/Chwiggy/thesis_bachelor)
 
 ## Installation
-*yet to be determined*
+Clone this repository.
+To run the application you might want to change the config parameters in `config.ini`
+And run
+```
+docker build -t thesis .
+```
+Yes this is building a conda environment, within a docker file. Yes i know how cursed this is, so don't at me.
+Then run
+```
+docker run thesis
+```
+
 
 ## Questions
 ~~Can closeness centrality map on to car and public transport differences~~
