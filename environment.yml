@@ -1,13 +1,10 @@
-name: umap
+name: matrix
 channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.11
-  - umap-learn
+  - python
   - r5py
   - h3pandas
   - osmnx
   - pyrosm
-  - ipykernel
-  - hdbscan
