@@ -67,7 +67,7 @@ def closeness_new(
             index="from_id", columns="to_id", values="travel_time"
         )
     
-    result = travel_time_pivot.copy()
+    result = travel_time_pivot.copy(shallow=True)
     result[f"mean_{destination.name}"] = travel_time_pivot.mean(axis=1)
     # TODO pass up limit for config
     result[f"reach_{destination.name}"] = reachable_destinations(pivot_table=travel_time_pivot, limit=45)
