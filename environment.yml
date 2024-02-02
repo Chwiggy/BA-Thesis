@@ -1,9 +1,7 @@
 name: matrix
 channels:
-  - defaults
   - conda-forge
 dependencies:
-  - python
   - r5py
   - h3pandas
   - osmnx
