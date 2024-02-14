@@ -19,4 +19,4 @@ RUN pip install -r requirements.txt
 COPY src/main.py .
 COPY src/utils utils
 COPY config.ini .
-# ENTRYPOINT ["mamba", "run", "--no-capture-output", "-n", "matrix", "python", "main.py", "-c", "config.ini"]
+ENTRYPOINT ["python", "main.py", "-c", "config.ini"]
