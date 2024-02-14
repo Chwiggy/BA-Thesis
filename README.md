@@ -9,7 +9,6 @@ And run
 ```
 docker build -t thesis .
 ```
-Yes this is building a conda environment, within a docker file. Yes i know how cursed this is, so don't at me.
 Then run
 ```
 docker run thesis

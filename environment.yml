@@ -1,8 +1,0 @@
-name: matrix
-channels:
-  - conda-forge
-dependencies:
-  - r5py
-  - h3pandas
-  - osmnx
-  - pyrosm

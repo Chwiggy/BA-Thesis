@@ -1,12 +1,22 @@
-FROM continuumio/anaconda3
+FROM debian
 WORKDIR /src
-COPY osmosis.sh .
-RUN osmosis.sh
-COPY environment.yml .
-RUN conda env create -f environment.yml
-SHELL [ "conda", "run", "-n", "matrix", "bin/bash", "-c" ]
+
+#Installing osmosis
+RUN apt-get update
+RUN apt-get -y install osmosis --fix-missing
+
+# setting up python environment
+RUN apt-get -y install python3-pip
+RUN apt-get -y install python3.11-venv
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+#Installing python packages
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 COPY src/main.py .
 COPY src/utils utils
 COPY config.ini .
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "matrix", "python", "main.py", "-c", "config.ini"]
+# ENTRYPOINT ["mamba", "run", "--no-capture-output", "-n", "matrix", "python", "main.py", "-c", "config.ini"]
