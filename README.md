@@ -3,8 +3,7 @@ This project is an attempt at creating a tool to detect gaps in public transit c
 It is part of a larger thesis project with a not-yet-started write-up [here](https://github.com/Chwiggy/thesis_bachelor)
 
 ## Installation
-Clone this repository.
-To run the application you might want to change the config parameters in `config.ini`
+Clone this repository. Move into the folder 
 And run
 ```
 docker build -t thesis .
