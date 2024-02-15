@@ -18,5 +18,8 @@ RUN pip install -r requirements.txt
 
 COPY src/main.py .
 COPY src/utils utils
-COPY config.ini .
-ENTRYPOINT ["python", "main.py", "-c", "config.ini"]
+COPY src/data/indices/geofabrik_downloadindex.json .
+
+RUN mkdir osm_data
+
+ENTRYPOINT ["python", "main.py"]

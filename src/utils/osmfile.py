@@ -192,7 +192,7 @@ def find_online_data(gdf: gpd.GeoDataFrame):
     return: return_data: OSMFile object
     """
 
-    geofabrik_available = gpd.read_file("src/data/indices/geofabrik_downloadindex.json")
+    geofabrik_available = gpd.read_file("geofabrik_downloadindex.json")
 
     # finding smallest available set covering gtfs feed
     matching_datasets = geofabrik_available.contains(gdf.unary_union)
@@ -206,7 +206,7 @@ def find_online_data(gdf: gpd.GeoDataFrame):
 
 def download_osm_data(id: str, extent):
     # TODO Error Handling for pyrosm: ValueError("couldnt find url for xyz")
-    osm_path = pyrosm.get_data(dataset=id, directory="src/data/osm_data")
+    osm_path = pyrosm.get_data(dataset=id, directory="osm_data")
     return_data = OSMFile(path=osm_path, extent=extent, name=id)
 
     return return_data
@@ -222,7 +222,7 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
     ## Return
     matching_file: file matching the extent of the provided GeoDataFrame.
     """
-    index = OSMIndex(path="src/data/indices/osm_data.json")
+    index = OSMIndex(path="osm_data.json")
     index.load_osm_fileindex()
 
     local_file = index.find_osm_file(gdf=geodata)
@@ -238,5 +238,5 @@ def get_osm_data(geodata: gpd.GeoDataFrame, name: str) -> OSMFile:
         matching_file.crop(geodata, name, inplace=True)
         index.add_file(matching_file)
 
-    index.save_osmindex(path="src/data/indices/osm_data.json")
+    index.save_osmindex(path="osm_data.json")
     return matching_file

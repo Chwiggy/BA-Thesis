@@ -16,7 +16,6 @@ from enum import Enum
 
 def main(place_name: str, gtfs_path: str):
     log.debug(msg="testing")
-    # TODO config file
 
     place = dst.geocoding(place_name)
     buffer = 1000
@@ -36,7 +35,7 @@ def main(place_name: str, gtfs_path: str):
     matching_osm_file = osm.get_osm_data(geodata=buffered_place, name=place_name)
     # TODO crop osm data to buffered place anyhow?
 
-    hexgrid = dst.places_to_pop_hexgrids(place=buffered_place, pop_data='/home/emily/thesis_BA/src/data/population/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0_R4_C19.tif')
+    hexgrid = dst.places_to_pop_hexgrids(place=buffered_place, pop_data='/data/population/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0_R4_C19.tif')
     # TODO exclude non populated areas
 
     log.info(f"creating transport network for {place_name}")
@@ -69,24 +68,20 @@ def main(place_name: str, gtfs_path: str):
         results = results.join(other=result, on="id")
         # TODO why does this randomly fail here sometimes
     
-    results.to_file(
-        filename=f"results/{place_name}_temp.json"
-    ) 
-    log.info(msg='saved results to GeoJSON')
-
-    # TODO analyse results
+    results.to_file(f"/data/output/{place_name}.json")
+    
 
 
 def cli_input():
     parser = argparse.ArgumentParser(
         description="all closeness centrality calculations for one county"
     )
-    parser.add_argument("place")
-    parser.add_argument("-g", "--gtfs")
+    parser.add_argument("place", help="specify place")
+    parser.add_argument("-g", "--gtfs", help="specify gtfs file")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
     place_name = args.place
-    gtfs_path = args.gtfs
+    config_path = args.gtfs
     verbosity = args.verbose
     if verbosity:
         log.basicConfig(
@@ -97,8 +92,7 @@ def cli_input():
             format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=log.INFO
         )
 
-
-    return place_name, gtfs_path
+    return place_name, config_path
 
 
 if __name__ == "__main__":

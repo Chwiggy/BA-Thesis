@@ -9,11 +9,33 @@ And run
 ```
 docker build -t thesis .
 ```
-Then run
+
+## Usage
+### Setup
+Create a folder with the following contents
+|folder|contents|
+|------|--------|
+|`gtfs`  | gtfs data either as subdirectory or as zip archive|
+|`population`| population data from the [Global Human Settlement Layer](https://ghsl.jrc.ec.europa.eu/download.php?ds=pop)|
+|`output`| output will be saved here as a GeoJSON|
+
+### Execution
+Run the following docker command with
 ```
-docker run thesis
+docker run -v $DATAFOLDER$:/data thesis -g $GTFSPATH$ place
+```
+- `DATAFOLDER` needs to be an absolute path to a data folder.
+- `GTFSPATH` needs to be `/data/` + the relative path to the desired gtfs file within your `DATAFOLDER`.
+- `place` is a location string that will be passed to the nominatim API.
+
+For example:
+```
+docker run -v /home/emily/thesis_BA/data/:/data -g /data/gtfs/2023_rnv_gtfs.zip thesis Wiesloch
 ```
 
+
+## Requirements
+Needs a recent `Docker` installation
 
 ## Questions
 ~~Can closeness centrality map on to car and public transport differences~~
@@ -24,11 +46,12 @@ Can closeness centrality work as an indicator for temporal public transport vari
 - [x] population data and lorenz curves
 - [x] temporal analysis: many departure times a day, compare results: use case ebay classifieds and friends
 - [x] think about equalizing of closeness centrality
-- [ ] manual clustering by amplitude of differences
 - [ ] final run on server
-    - [ ] optimise script for server usage
+    - [x] optimise script for server usage
     - [ ] difference between 10th and 90th percentile as a measure of "turning up and wait"-abilty vs a need to plan
     - [ ] run analysis for heidelberg + surrounding area on server
+### New repository
+- [ ] create new repo for analysis
 - [ ] compare different profiles: use classification?
 - [ ] pick different representative cells with detailed analysis
     - [ ] from one cell to any cell over time
