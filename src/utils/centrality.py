@@ -6,7 +6,7 @@ import r5py
 import utils.destination as dst
 
 
-def closeness_new(
+def median_closeness(
     transit: r5py.TransportNetwork,
     hexgrid: gpd.GeoDataFrame,
     destination=dst.DestinationSet,
@@ -36,9 +36,48 @@ def closeness_new(
         )
     
     result = travel_time_pivot
-    result[f"mean_{destination.name}"] = travel_time_pivot.mean(axis=1)
-    result = result[[f"mean_{destination.name}"]]
+    result[f"median_{destination.name}"] = travel_time_pivot.mean(axis=1)
+    result = result[[f"median_{destination.name}"]]
     return result
+
+def percentile_difference(
+        transit: r5py.TransportNetwork,
+        hexgrid: gpd.GeoDataFrame,
+        destination=dst.DestinationSet) -> gpd.GeoDataFrame:
+    
+    log.info(msg=f"Instantiating TravelTimeMatrixComputer for {destination.name}")
+    travel_time_matrix_computer = r5py.TravelTimeMatrixComputer(
+        transport_network=transit,
+        origins=hexgrid,
+        destinations=destination.destinations,
+        departure=departure_time(transit, destination),
+        departure_time_window=datetime.timedelta(minutes=60),
+        transport_modes=[r5py.TransportMode.WALK, r5py.TransportMode.TRANSIT],
+        percentiles=[10,90]
+    )
+    log.info(
+        msg=f"Computing Travel Time Matrix for {destination.name}. This might take a while ..."
+    )
+    travel_times = travel_time_matrix_computer.compute_travel_times()
+    log.info(msg="Finished calculating travel times")
+
+    difference = travel_times["travel_time_p90"] - travel_times["travel_time_p10"]
+    travel_times["difference"] = difference
+
+    if destination.reversed:
+        travel_time_pivot = travel_times.pivot(
+            index="to_id", columns="from_id", values="difference"
+        )
+    else:
+        travel_time_pivot = travel_times.pivot(
+            index="from_id", columns="to_id", values="difference"
+        )
+    
+    result = travel_time_pivot
+    result[f"difference_{destination.name}"] = travel_time_pivot.mean(axis=1)
+    result = result[[f"difference_{destination.name}"]]
+    return result
+    
 
 
 def departure_time(

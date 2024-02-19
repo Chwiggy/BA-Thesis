@@ -60,15 +60,26 @@ def main(place_name: str, gtfs_path: str):
     # Computing and matching up results
     results = hexgrid
     for destination in destinations:
-        result = centrality.closeness_new(
+        result = centrality.median_closeness(
             transit=transport_network,
             hexgrid=dst.centroids(hexgrid),
             destination=destination,
         )
         results = results.join(other=result, on="id")
-        # TODO why does this randomly fail here sometimes
+        # TODO add difference
     
     results.to_file(f"/data/output/{place_name}.json")
+
+    results = hexgrid
+    for destination in destinations:
+        result = centrality.percentile_difference(
+            transit=transport_network,
+            hexgrid=dst.centroids(hexgrid),
+            destination=destination,
+        )
+        results = results.join(other=result, on="id")
+
+    results.to_file(f"/data/output/{place_name}_difference.json")
     
 
 
