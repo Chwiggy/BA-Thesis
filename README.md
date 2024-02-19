@@ -20,7 +20,7 @@ Create a folder with the following contents
 
 ### Execution
 Run the following docker command with
-```
+```bash
 docker run -v $DATAFOLDER$:/data thesis -g $GTFSPATH$ place
 ```
 - `DATAFOLDER` needs to be an absolute path to a data folder.
@@ -28,9 +28,16 @@ docker run -v $DATAFOLDER$:/data thesis -g $GTFSPATH$ place
 - `place` is a location string that will be passed to the nominatim API.
 
 For example:
-```
+```bash
 docker run -v /home/emily/thesis_BA/data/:/data -g /data/gtfs/2023_rnv_gtfs.zip thesis Wiesloch
 docker run -v $HOME/data:/data --rm --security-opt=seccomp=unconfined --workdir=/ thesis2 -g /data/gtfs/2024-02-19_Germany.zip Heidelberg
+```
+## Things to keep in mind
+### Esoteric WSL 2 and VPN shit
+
+```powershell
+Get-NetAdapter | Where-Object {$_.InterfaceDescription -Match "Cisco AnyConnect"} | Set-NetIPInterface -InterfaceMetric 4000
+Get-NetIPInterface -InterfaceAlias "vEthernet (WSL)" | Set-NetIPInterface -InterfaceMetric 1
 ```
 
 
