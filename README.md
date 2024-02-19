@@ -30,6 +30,7 @@ docker run -v $DATAFOLDER$:/data thesis -g $GTFSPATH$ place
 For example:
 ```
 docker run -v /home/emily/thesis_BA/data/:/data -g /data/gtfs/2023_rnv_gtfs.zip thesis Wiesloch
+docker run -v $HOME/data:/data --rm --security-opt=seccomp=unconfined --workdir=/ thesis2 -g /data/gtfs/2024-02-19_Germany.zip Heidelberg
 ```
 
 
