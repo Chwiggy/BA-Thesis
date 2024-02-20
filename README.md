@@ -30,6 +30,8 @@ docker run -v $DATAFOLDER$:/data thesis -g $GTFSPATH$ place
 For example:
 ```bash
 docker run -v /home/emily/thesis_BA/data/:/data -g /data/gtfs/2023_rnv_gtfs.zip thesis Wiesloch
+```
+```bash
 docker run -v $HOME/data:/data --rm --security-opt=seccomp=unconfined --workdir=/ thesis2 -g /data/gtfs/2024-02-19_Germany.zip Heidelberg
 ```
 ## Things to keep in mind
@@ -37,6 +39,8 @@ docker run -v $HOME/data:/data --rm --security-opt=seccomp=unconfined --workdir=
 
 ```powershell
 Get-NetAdapter | Where-Object {$_.InterfaceDescription -Match "Cisco AnyConnect"} | Set-NetIPInterface -InterfaceMetric 4000
+```
+```powershell
 Get-NetIPInterface -InterfaceAlias "vEthernet (WSL)" | Set-NetIPInterface -InterfaceMetric 1
 ```
 
