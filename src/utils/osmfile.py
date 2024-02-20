@@ -56,7 +56,7 @@ class OSMFile:
         if name is None:
             name = self.name + "_cropped"
 
-        save_path = f"src/data/osm_data/{name}.osm.pbf"
+        save_path = f"osm_data/{name}.osm.pbf"
 
         # cropping pbf to bounding box with osmosis
         log.info("Cropping the OSM dataset with Osmosis. This might take a while...")
