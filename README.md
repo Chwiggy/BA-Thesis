@@ -59,10 +59,11 @@ Can closeness centrality work as an indicator for temporal public transport vari
 - [x] think about equalizing of closeness centrality
 - [ ] final run on server
     - [x] optimise script for server usage
-    - [ ] difference between 10th and 90th percentile as a measure of "turning up and wait"-abilty vs a need to plan
+    - [x] difference between 10th and 90th percentile as a measure of "turning up and wait"-abilty vs a need to plan
     - [ ] run analysis for heidelberg + surrounding area on server
 ### New repository
 - [ ] create new repo for analysis
+- [ ] how much planning over the area
 - [ ] compare different profiles: use classification?
 - [ ] pick different representative cells with detailed analysis
     - [ ] from one cell to any cell over time
