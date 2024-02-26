@@ -55,6 +55,7 @@ def main(place_name: str, gtfs_path: str):
     times = Enum("Times", times_of_day)
 
     # Processing destination data for every time of day
+    # TODO exclude cells with 0 population from destinations
     destinations = dst.destination_sets_from_dataframe(data=hexgrid, times=times)
 
     # Computing and matching up results
