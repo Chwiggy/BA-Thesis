@@ -93,7 +93,7 @@ def places_to_hexgrids(place: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
     return hexgrid
 
-def places_to_pop_hexgrids(place: gpd.GeoDataFrame, pop_data: str) -> gpd.GeoDataFrame:
+def places_to_pop_hexgrids(place: gpd.GeoDataFrame, pop_data: str) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     populated_place = raster.gdf_to_data_raster(place, pop_data)
     # TODO use h3pandas to aggregate population density data
     # TODO use hexgrid areas to get population per cell
@@ -103,8 +103,8 @@ def places_to_pop_hexgrids(place: gpd.GeoDataFrame, pop_data: str) -> gpd.GeoDat
     hexgrid.reset_index(inplace=True)
     hexgrid.rename(columns={"h3_polyfill": "id"}, inplace=True)
     hexgrid = hexgrid.clip(mask=place, keep_geom_type=True)
-    hexgrid = hexgrid[hexgrid.pop_density != 0]
-    return hexgrid
+    hexgrid_no_pop = hexgrid[hexgrid.pop_density != 0]
+    return hexgrid, hexgrid_no_pop
     
 
 class DestinationEnum(Enum):

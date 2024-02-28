@@ -35,7 +35,7 @@ def main(place_name: str, gtfs_path: str):
     matching_osm_file = osm.get_osm_data(geodata=buffered_place, name=place_name)
     # TODO crop osm data to buffered place anyhow?
 
-    hexgrid = dst.places_to_pop_hexgrids(place=buffered_place, pop_data='/data/population/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0_R4_C19.tif')
+    hexgrid, hexgrid_no_pop = dst.places_to_pop_hexgrids(place=buffered_place, pop_data='/data/population/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0_R4_C19.tif')
     # TODO exclude non populated areas
 
     log.info(f"creating transport network for {place_name}")
@@ -56,7 +56,7 @@ def main(place_name: str, gtfs_path: str):
 
     # Processing destination data for every time of day
     # TODO exclude cells with 0 population from destinations
-    destinations = dst.destination_sets_from_dataframe(data=hexgrid, times=times)
+    destinations = dst.destination_sets_from_dataframe(data=hexgrid_no_pop, times=times)
 
     # Computing and matching up results
     results = hexgrid
