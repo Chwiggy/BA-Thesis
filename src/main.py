@@ -69,7 +69,7 @@ def main(place_name: str, gtfs_path: str):
         results = results.join(other=result, on="id")
         # TODO add difference
     
-    results.to_file(f"/data/output/{place_name}.json")
+    results.to_file(f"/data/output/{place_name}_pop.json")
 
     results = hexgrid
     for destination in destinations:
@@ -80,7 +80,7 @@ def main(place_name: str, gtfs_path: str):
         )
         results = results.join(other=result, on="id")
 
-    results.to_file(f"/data/output/{place_name}_difference.json")
+    results.to_file(f"/data/output/{place_name}_difference_pop.json")
     
 
 
